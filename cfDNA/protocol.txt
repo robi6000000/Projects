@@ -1,0 +1,136 @@
+file structure:
+Projects/
+  cfDNA/
+    data/
+      processing/        
+        (files created during data procesing)
+      subsampled/        
+        (subsampled fragment files for testing)
+      source_data/       
+        (downloaded data files)
+    features.ipynb
+
+
+//
+initial data preparation:
+openchromatin regions compilation: 
+  DNAseq peaks source:
+    https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/
+    E029-DNase.hotspot.broad.bed.gz
+    E032-DNase.hotspot.broad.bed.gz
+    E034-DNase.hotspot.broad.bed.gz
+
+  ATACseq peaks source:
+    https://gdc.cancer.gov/about-data/publications/ATACseq-AWG
+    Other Supplemental Data Files > ATAC-seq Peak Calls > Pan-cancer peak set 
+    TCGA-ATAC_PanCancer_PeakSet.txt
+    https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz
+    (liftOver chain file to convert hg38 to hg19 coordinates)
+
+  // note from the corces 2018 paper:
+  "Data and materials availability: Processed data not provided in the 
+  supplementary data files is available through our TCGA Publication Page 
+  (https://gdc.cancer.gov/about-data/publications/ATACseq-AWG). This 
+  includes pan-cancer raw and normalized counts matrices, cancer type-specific 
+  peak calls, cancer type-specific raw and normalized count matrices, and bigWig 
+  track files for all technical replicates. Raw ATAC-seq data as fastq or aligned 
+  BAM files will be made available through the NIH Genomic Data Commons portal 
+  (https://portal.gdc.cancer.gov/). ATAC-seq data corresponding to human plasmacytoid 
+  dendritic cells and myeloid dendritic cells (the only non-TCGA data generated here) 
+  is available through SRA BioProject PRJNA491478. The ATAC-seq peak accessibility 
+  and computed peak-to-gene linkage predictions are publicly available for interactive 
+  visualization and exploration at the UCSC Xena Browser (https://atacseq.xenahubs.net)."
+
+TSS positions: 
+  Human reference genome annotation:
+    https://www.gencodegenes.org/human/release_30lift37.html
+    gencode.v30lift37.annotation.gtf
+
+  hg19 chromosome sizes:
+    https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
+    hg19.genome
+  
+Frag files used:
+  http://finaledb.research.cchmc.org/
+  EE87788.hg19.frag.tsv.bgz  
+  (renamed to bileduct_EE87788.hg19.frag.tsv.bgz)
+
+
+following commands executed from Projects/cfDNA/data
+
+// unzip chain file
+gunzip source_data/hg38ToHg19.over.chain.gz
+
+// remove header from atacseq pancancer peaks, select only first 3 columns
+tail -n +2 source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 > processing/PanCancer_PeakSet_no_header.hg38.bed
+
+// liftover pancancer atacseq peaks hg38 - hg19
+./liftOver processing/PanCancer_PeakSet_no_header.hg38.bed source_data/hg38ToHg19.over.chain processing/mat.hg19.bed processing/mat.unmapped.txt
+
+// dnaseq files - unzip and select only 3 columns 
+(
+  zcat source_data/E029-DNase.hotspot.broad.bed.gz | cut -f1-3
+  zcat source_data/E032-DNase.hotspot.broad.bed.gz | cut -f1-3
+  zcat source_data/E034-DNase.hotspot.broad.bed.gz | cut -f1-3
+  cat processing/mat.hg19.bed | cut -f1-3
+) > processing/all_openchrom_regions.bed
+
+// sort and merge to get open chromatin union
+sort -k1,1V -k2,2n -k3,3n processing/all_openchrom_regions.bed > processing/all_openchrom_regions.sorted.bed
+bedtools merge -i processing/all_openchrom_regions.sorted.bed > processing/openchrom_union.bed
+
+// Autosomes = chromosomes 1–22 (exclude x,y) etc
+// number of lines doesnt match the article, is ~300k more than expected(561k)
+awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' processing/openchrom_union.bed > processing/openchrom_union_autosomes.bed
+wc -l processing/openchrom_union_autosomes.bed
+
+// bin the open chromatin regions
+// 200bp centered regions - calculate centroid and add 100bp each side
+// this will be later intersected with fragments to get fragments within these regions, and those will be use to calculate features
+awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' processing/openchrom_union.bed > processing/openchrom_200bp.unsorted.bed
+sort -k1,1V -k2,2n -k3,3n   processing/openchrom_200bp.unsorted.bed   > processing/openchrom_200bp.bed
+
+
+// get reference genome chromosome sizes
+wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes -O source_data/hg19.genome
+//     wget --timestamping 
+//        'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/chromosomes/*'
+// get end motif
+TODO
+
+
+// get TSS positions from gencode gtf
+awk 'BEGIN{OFS="\t"} 
+$3=="transcript" {
+    if ($7 == "+") print $1, $4, $4, ".", ".", $7;
+    else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
+}' source_data/gencode.v30lift37.annotation.gtf > processing/tss_raw.bed
+
+
+// check chromosomes and filter:
+cut -f1 processing/tss_raw.bed | sort | uniq -c
+awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' processing/tss_raw.bed > processing/tss_autosomes.bed
+
+
+bedtools slop -i processing/tss_autosomes.bed -g source_data/hg19.genome -l 150 -r 50 -s > processing/tss_150_50.bed
+bedtools slop -i processing/tss_autosomes.bed -g source_data/hg19.genome -l 1000 -r 1000 -s > processing/tss_1000_1000.bed
+
+
+// subsampling fragments for testing
+// first filter only autosomes
+zcat source_data/bileduct_EE87788.hg19.frag.tsv.bgz | \
+awk -F"\t" 'BEGIN{OFS="\t"} $1 ~ /^[0-9]+$/ && $1 <= 22' \
+> subsampled/bileduct_autosomes.bed
+
+// add chr prefix
+awk -F"\t" 'BEGIN{OFS="\t"} {
+    chrom=$1
+    if (chrom !~ /^chr/) chrom="chr"chrom
+    $1=chrom
+    print
+}' subsampled/bileduct_autosomes.bed > subsampled/bileduct_autosomes_chr.bed
+
+// random subsample 50k (not stratified)
+cat subsampled/bileduct_autosomes_chr.bed \
+    | shuf -n 50000 \
+    > subsampled/bileduct_subsample.bed
