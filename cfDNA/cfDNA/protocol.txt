@@ -1,0 +1,150 @@
+file structure:
+Projects/
+  cfDNA/
+    data/
+      processing/        
+        (files created during data procesing)
+      subsampled/        
+        (subsampled fragment files for testing)
+      source_data/       
+        (downloaded data files)
+    features.ipynb
+
+
+//
+initial data preparation:
+openchromatin regions compilation: 
+  DNAseq peaks source:
+    https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/
+    E029-DNase.hotspot.broad.bed.gz
+    E032-DNase.hotspot.broad.bed.gz
+    E034-DNase.hotspot.broad.bed.gz
+
+  ATACseq peaks source:
+    https://gdc.cancer.gov/about-data/publications/ATACseq-AWG
+    Other Supplemental Data Files > ATAC-seq Peak Calls > Pan-cancer peak set 
+    TCGA-ATAC_PanCancer_PeakSet.txt
+
+TSS positions: 
+  Human reference genome annotation:
+    https://www.gencodegenes.org/human/release_30lift37.html
+    gencode.v30lift37.annotation.gtf
+
+  hg19 chromosome sizes:
+    https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
+    hg19.genome
+  
+Frag files used:
+  http://finaledb.research.cchmc.org/
+  EE87788.hg19.frag.tsv.bgz  
+  (renamed to bileduct_EE87788.hg19.frag.tsv.bgz)
+
+
+following commands executed from Projects/cfDNA/data
+
+// dnaseq files - unzip and select only 3 columns (pancancer also has header)
+( zcat source_data/E029-DNase.hotspot.broad.bed.gz | cut -f1-3 ; 
+  zcat source_data/E032-DNase.hotspot.broad.bed.gz | cut -f1-3 ;
+  zcat source_data/E034-DNase.hotspot.broad.bed.gz | cut -f1-3 ;
+  tail -n +2 source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 ) \
+  > processing/all_openchrom_regions.bed
+
+// sort and merge to get open chromatin union
+sort -k1,1 -k2,2n processing/all_openchrom_regions.bed > processing/all_openchrom_regions.sorted.bed
+bedtools merge -i processing/all_openchrom_regions.sorted.bed > processing/openchrom_union.bed
+
+// Autosomes = chromosomes 1–22 (exclude x,y) etc
+awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' processing/openchrom_union.bed > processing/openchrom_union_autosomes.bed
+wc -l processing/openchrom_union_autosomes.bed
+
+
+// bin the open chromatin regions
+// 200bp centered regions - calculate centroid and add 100bp each side
+awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' processing/openchrom_union_autosomes.bed > processing/openchrom_200bp.bed
+
+// add region ids
+awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
+    processing/openchrom_200bp.bed \
+    > processing/openchrom_with_id.bed
+
+// print head
+head processing/openchrom_with_id.bed
+
+
+
+// get reference genome chromosome sizes
+wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes -O source_data/hg19.genome
+
+
+// get TSS positions from gencode gtf
+awk 'BEGIN{OFS="\t"} 
+$3=="transcript" {
+    if ($7 == "+") print $1, $4, $4, ".", ".", $7;
+    else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
+}' source_data/gencode.v30lift37.annotation.gtf > processing/tss_raw.bed
+
+
+// check chromosomes and filter:
+cut -f1 processing/tss_raw.bed | sort | uniq -c
+awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' processing/tss_raw.bed > processing/tss_autosomes.bed
+
+
+bedtools slop -i processing/tss_autosomes.bed -g source_data/hg19.genome -l 150 -r 50 -s > processing/tss_150_50.bed
+bedtools slop -i processing/tss_autosomes.bed -g source_data/hg19.genome -l 1000 -r 1000 -s > processing/tss_1000_1000.bed
+
+
+// get reference genome fasta for end motif:
+wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz -O source_data/hg19.fa.gz
+gunzip source_data/hg19.fa.gz
+
+///////////////////////////////////////////////////////////////subsampling unused////////////////////////////////////////////////////////
+// subsampling fragments for testing
+// first filter only autosomes
+zcat source_data/bileduct_EE87788.hg19.frag.tsv.bgz | \
+awk -F"\t" 'BEGIN{OFS="\t"} $1 ~ /^[0-9]+$/ && $1 <= 22' \
+> subsampled/bileduct_autosomes.bed
+
+// add chr prefix
+awk -F"\t" 'BEGIN{OFS="\t"} {
+    chrom=$1
+    if (chrom !~ /^chr/) chrom="chr"chrom
+    $1=chrom
+    print
+}' subsampled/bileduct_autosomes.bed > subsampled/bileduct_autosomes_chr.bed
+
+// random subsample 50k (not stratified)
+cat subsampled/bileduct_autosomes_chr.bed \
+    | shuf -n 50000 \
+    > subsampled/bileduct_subsample.bed
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// full sample processing
+// first filter only autosomes
+mkdir fullsample
+zcat source_data/bileduct_EE87788.hg19.frag.tsv.bgz | \
+awk -F"\t" 'BEGIN{OFS="\t"} $1 ~ /^[0-9]+$/ && $1 <= 22' \
+> fullsample/bileduct_autosomes.bed
+
+// add chr prefix
+awk -F"\t" 'BEGIN{OFS="\t"} {
+    chrom=$1
+    if (chrom !~ /^chr/) chrom="chr"chrom
+    $1=chrom
+    print
+}' fullsample/bileduct_autosomes.bed > fullsample/bileduct_autosomes_chr.bed
+
+// this is the file that will be used for most of the analysis
+// create fragment centroid file from full sample (move centroids to 2 and 3 positions so intersect works for the centroids not fragment boundaries)
+awk 'BEGIN{OFS="\t"} {centroid=int(($2+$3)/2); print $1, centroid, centroid, $2, $3, $4, $5}' fullsample/bileduct_autosomes_chr.bed > processing/fragments_centroids.bed
+
+// intersect fragmet centroids with open chromatin regions with ids
+bedtools intersect -a processing/fragments_centroids.bed -b processing/openchrom_with_id.bed -wa -wb > processing/frag_centroids_openchrom_intersect.bed
+
+// for fragment ends, we need to create a separate bedfile, intersecting openchrom regions with fragment start and ends, can t use the centroid file
+// create 2 lines from each fragment - one start, one end
+awk 'BEGIN{OFS="\t"} {u=int(($2)); print $1,u,u+1,"U"; d=int($3)-1; print $1,d,d+1,"D"}' \
+    fullsample/bileduct_autosomes_chr.bed \
+    > processing/frag_ends.bed
+
+bedtools intersect -a processing/frag_ends.bed -b processing/openchrom_with_id.bed -wa -wb > processing/frag_ends_openchrom_intersect.bed
+// for OCF we also need fragment end information intersected with openchrom
