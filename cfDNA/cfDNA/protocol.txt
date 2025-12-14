@@ -8,6 +8,9 @@ Projects/
         (subsampled fragment files for testing)
       source_data/       
         (downloaded data files)
+      fullsample/      
+        (full fragment files for analysis)
+      
     features.ipynb
 
 
@@ -25,6 +28,10 @@ openchromatin regions compilation:
     Other Supplemental Data Files > ATAC-seq Peak Calls > Pan-cancer peak set 
     TCGA-ATAC_PanCancer_PeakSet.txt
 
+  liftover chain file: 
+    http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/
+    hg38ToHg19.over.chain.gz
+
 TSS positions: 
   Human reference genome annotation:
     https://www.gencodegenes.org/human/release_30lift37.html
@@ -33,6 +40,7 @@ TSS positions:
   hg19 chromosome sizes:
     https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes
     hg19.genome
+
   
 Frag files used:
   http://finaledb.research.cchmc.org/
@@ -42,11 +50,27 @@ Frag files used:
 
 following commands executed from Projects/cfDNA/data
 
+// liftover pancancer peaks from hg38 to hg19
+// download liftover file
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz -O source_data/hg38ToHg19.over.chain.gz
+gunzip source_data/hg38ToHg19.over.chain.gz
+
+// remove header from pancancer peaks file and select only thee 3 columns
+tail -n +2 source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 > source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt
+
+// liftover pancancer peaks
+liftOver \
+  source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt \
+  source_data/hg38ToHg19.over.chain \
+  processing/mat.pancancer.hg19.bed \
+  processing/mat.unmapped.hg19.bed
+
+
 // dnaseq files - unzip and select only 3 columns (pancancer also has header)
-( zcat source_data/E029-DNase.hotspot.broad.bed.gz | cut -f1-3 ; 
-  zcat source_data/E032-DNase.hotspot.broad.bed.gz | cut -f1-3 ;
-  zcat source_data/E034-DNase.hotspot.broad.bed.gz | cut -f1-3 ;
-  tail -n +2 source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 ) \
+( zcat source_data/E029-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ; 
+  zcat source_data/E032-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
+  zcat source_data/E034-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
+  cat processing/mat.pancancer.hg19.bed ) \
   > processing/all_openchrom_regions.bed
 
 // sort and merge to get open chromatin union
@@ -68,9 +92,7 @@ awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
     > processing/openchrom_with_id.bed
 
 // print head
-head processing/openchrom_with_id.bed
-
-
+// head processing/openchrom_with_id.bed
 
 // get reference genome chromosome sizes
 wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes -O source_data/hg19.genome
@@ -138,6 +160,7 @@ awk -F"\t" 'BEGIN{OFS="\t"} {
 awk 'BEGIN{OFS="\t"} {centroid=int(($2+$3)/2); print $1, centroid, centroid, $2, $3, $4, $5}' fullsample/bileduct_autosomes_chr.bed > processing/fragments_centroids.bed
 
 // intersect fragmet centroids with open chromatin regions with ids
+// https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html
 bedtools intersect -a processing/fragments_centroids.bed -b processing/openchrom_with_id.bed -wa -wb > processing/frag_centroids_openchrom_intersect.bed
 
 // for fragment ends, we need to create a separate bedfile, intersecting openchrom regions with fragment start and ends, can t use the centroid file
