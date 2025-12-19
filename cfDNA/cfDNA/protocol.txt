@@ -19,9 +19,9 @@ initial data preparation:
 openchromatin regions compilation: 
   DNAseq peaks source:
     https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/
-    E029-DNase.hotspot.broad.bed.gz
-    E032-DNase.hotspot.broad.bed.gz
-    E034-DNase.hotspot.broad.bed.gz
+    E029-DNase.hotspot.fdr0.01.broad.bed.gz
+    E032-DNase.hotspot.fdr0.01.broad.bed.gz
+    E034-DNase.hotspot.fdr0.01.broad.bed.gz
 
   ATACseq peaks source:
     https://gdc.cancer.gov/about-data/publications/ATACseq-AWG
@@ -48,7 +48,7 @@ Frag files used:
   (renamed to bileduct_EE87788.hg19.frag.tsv.bgz)
 
 
-following commands executed from Projects/cfDNA/data
+following commands executed from Projects/cfDNA/cfDNA/data
 
 // liftover pancancer peaks from hg38 to hg19
 // download liftover file
@@ -59,7 +59,7 @@ gunzip source_data/hg38ToHg19.over.chain.gz
 tail -n +2 source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 > source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt
 
 // liftover pancancer peaks
-liftOver \
+./liftOver \
   source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt \
   source_data/hg38ToHg19.over.chain \
   processing/mat.pancancer.hg19.bed \
@@ -185,7 +185,7 @@ bedtools intersect \
   -a processing/frag_ends_openchrom_intersect.bed \
   -b processing/openchrom_with_id_centroid.bed \
   -wa -wb \
-> processing/frag_ends_with_centroid.bed
+> processing/frag_ends_centroid.bed
 
 // clean the redundant columns
 awk 'BEGIN{OFS="\t"} {
@@ -199,6 +199,6 @@ awk 'BEGIN{OFS="\t"} {
     centroid = $12
     rel_pos = end1 - centroid
     print chrom, end1, end2, end_type, oc_start, oc_end, region_id, centroid, rel_pos
-}' processing/frag_ends_with_centroid.bed \
-> processing/frag_ends_for_ocf.bed
+}' processing/frag_ends_centroid.bed \
+> processing/frag_ends_ocf.bed
 
