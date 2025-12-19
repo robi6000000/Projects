@@ -74,7 +74,7 @@ liftOver \
   > processing/all_openchrom_regions.bed
 
 // sort and merge to get open chromatin union
-sort -k1,1 -k2,2n processing/all_openchrom_regions.bed > processing/all_openchrom_regions.sorted.bed
+sort -k1,1V -k2,2n processing/all_openchrom_regions.bed > processing/all_openchrom_regions.sorted.bed
 bedtools merge -i processing/all_openchrom_regions.sorted.bed > processing/openchrom_union.bed
 
 // Autosomes = chromosomes 1–22 (exclude x,y) etc
@@ -170,4 +170,35 @@ awk 'BEGIN{OFS="\t"} {u=int(($2)); print $1,u,u+1,"U"; d=int($3)-1; print $1,d,d
     > processing/frag_ends.bed
 
 bedtools intersect -a processing/frag_ends.bed -b processing/openchrom_with_id.bed -wa -wb > processing/frag_ends_openchrom_intersect.bed
+
+
 // for OCF we also need fragment end information intersected with openchrom
+// add a centroid column
+awk 'BEGIN{OFS="\t"} {
+    c=int(($2+$3)/2);
+    print $1, $2, $3, c, $4
+}' processing/openchrom_with_id.bed \
+> processing/openchrom_with_id_centroid.bed
+
+//
+bedtools intersect \
+  -a processing/frag_ends_openchrom_intersect.bed \
+  -b processing/openchrom_with_id_centroid.bed \
+  -wa -wb \
+> processing/frag_ends_with_centroid.bed
+
+// clean the redundant columns
+awk 'BEGIN{OFS="\t"} {
+    chrom = $1
+    end1 = $2
+    end2 = $3
+    end_type = $4
+    oc_start = $6
+    oc_end = $7
+    region_id = $8
+    centroid = $12
+    rel_pos = end1 - centroid
+    print chrom, end1, end2, end_type, oc_start, oc_end, region_id, centroid, rel_pos
+}' processing/frag_ends_with_centroid.bed \
+> processing/frag_ends_for_ocf.bed
+
