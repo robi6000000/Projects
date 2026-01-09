@@ -1,0 +1,9 @@
+# give executable permissions to the scripts
+chmod -x ./static_script.sh
+chmod -x ./sample_prep_script.sh
+chmod -x ./sample_features_script.py
+
+# run static script once, run sample prep for each sample
+# sample_prep_script runs python script at the end, yielding a row of features per sample
+./static_script.sh
+./sample_prep_script.sh 

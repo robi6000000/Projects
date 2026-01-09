@@ -28,6 +28,9 @@ def main():
     frag_ends_openchrom_intersect_path = sys.argv[3]
     frag_ends_ocf_path = sys.argv[4]
     openchrom_path = './data/processing/openchrom_with_id.bed'
+
+    # the command to execute the python at the end would be:
+    # python ./sample_features_script.py EE87788 data/processing/EE87788_frag_centroids_openchrom_intersect.bed data/processing/EE87788_frag_ends_openchrom_intersect.bed data/processing/EE87788_frag_ends_ocf.bed
     print(f"Using sample: {sample_id}")
 
 
@@ -122,7 +125,7 @@ def main():
 
 
 
-    ### **FSR**
+    ### FSR
     bins_fsr = [65, 151, 221, 400]
     bin_labels_fsr = [f"{bins_fsr[i]}-{bins_fsr[i+1]}" for i in range(len(bins_fsr)-1)]
 
@@ -133,7 +136,6 @@ def main():
         right=False,
         include_lowest=True
     )
-    frag_centroids_openchrom_intersect_grouped = frag_centroids_openchrom_intersect.groupby("region_id")
 
     counts = (frag_centroids_openchrom_intersect
             .groupby(["region_id", "fsr_bin"], observed=True)
@@ -145,7 +147,7 @@ def main():
 
 
 
-    ### **FSD**
+    ### FSD
     bins_fsd = list(range(65, 405, 5)) 
     frag_centroids_openchrom_intersect["fsd_bin"] = pd.cut(
         frag_centroids_openchrom_intersect["length"],
@@ -166,7 +168,7 @@ def main():
 
 
 
-    ### **coverage**
+    ### coverage
     # for coverage we need to merge with the original region id file at the start, since we are just counting occurences
     centroids_intersect = df_region_ids.merge(
         frag_centroids_openchrom_intersect,
@@ -275,49 +277,65 @@ def main():
     #TODO
 
 
-    ### EDM
-    hg19 = Fasta('./data/source_data/hg19.fa')
-    # 5'ends
-    ends_5 = frag_centroids_openchrom_intersect[['f_chrom','f_start','region_id']].copy()
-    ends_5['pos'] = ends_5['f_start']
-    ends_5['end_type'] = '5'
+    # ### EDM
+    # hg19 = Fasta('./data/source_data/hg19.fa')
+    # # 5'ends
+    # ends_5 = frag_centroids_openchrom_intersect[['f_chrom','f_start','region_id']].copy()
+    # ends_5['pos'] = ends_5['f_start']
+    # ends_5['end_type'] = '5'
 
-    # 3' ends
-    ends_3 = frag_centroids_openchrom_intersect[['f_chrom','f_end','region_id']].copy()
-    ends_3['pos'] = ends_3['f_end'] - 4
-    ends_3['end_type'] = '3'
-    ends = pd.concat([ends_5, ends_3], ignore_index=True)
+    # # 3' ends
+    # ends_3 = frag_centroids_openchrom_intersect[['f_chrom','f_end','region_id']].copy()
+    # ends_3['pos'] = ends_3['f_end'] - 4
+    # ends_3['end_type'] = '3'
+    # ends = pd.concat([ends_5, ends_3], ignore_index=True)
 
-    def get_motif(df, genome, k=4):
-        chrom = df.name
-        seq = genome[chrom]
-        motifs = [
-            str(seq[pos:pos+k].seq).upper()
-            if pos >= 0 else None
-            for pos in df['pos'].values
-        ]
-        return pd.Series(motifs, index=df.index)
+    # def get_motif(df, genome, k=4):
+    #     chrom = df.name
+    #     seq = genome[chrom]
+    #     motifs = [
+    #         str(seq[pos:pos+k].seq).upper()
+    #         if pos >= 0 else None
+    #         for pos in df['pos'].values
+    #     ]
+    #     return pd.Series(motifs, index=df.index)
 
-    # filter out non-acgt letters (N)
-    ends['motif'] = (
-        ends
-        .groupby('f_chrom', group_keys=False)
-        .apply(get_motif, genome=hg19, k=4, include_groups=False)
-    )
-    ends.loc[~ends['motif'].str.match('^[ACGT]{4}$'), 'motif'].head()
-    ends = ends[ends['motif'].str.match('^[ACGT]{4}$')]
+    # # filter out non-acgt letters (N)
+    # ends['motif'] = (
+    #     ends
+    #     .groupby('f_chrom', group_keys=False)
+    #     .apply(get_motif, genome=hg19, k=4, include_groups=False)
+    # )
+    # ends.loc[~ends['motif'].str.match('^[ACGT]{4}$'), 'motif'].head()
+    # ends = ends[ends['motif'].str.match('^[ACGT]{4}$')]
 
-    # now we calculate proportions of each motif at each end per chromosome - 256x22
-    motif_counts = (
-        ends
-        .groupby(['f_chrom', 'motif'], observed=True)
-        .size()
-        .unstack(fill_value=0)
-    )
-    df_motif = motif_counts.div(motif_counts.sum(axis=1), axis=0)
-    df_motif = df_motif.reindex(chrom_order)
-    print("df_motif.shape:", df_motif.shape)
-    print("motif with max proportion:", df_motif.max().idxmax())
+    # # now we calculate proportions of each motif at each end per chromosome - 256x22
+    # motif_counts = (
+    #     ends
+    #     .groupby(['f_chrom', 'motif'], observed=True)
+    #     .size()
+    #     .unstack(fill_value=0)
+    # )
+    # df_motif = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+    # df_motif = df_motif.reindex(chrom_order)
+    # print("df_motif.shape:", df_motif.shape)
+    # print("motif with max proportion:", df_motif.max().idxmax())
+
+
+    # vector features: df_pfe, df_cov, df_end, df_ocf, df_ifs
+    # merge vecotr features on region_id and flatten
+    region_index = df_region_ids["region_id"].values
+
+    vec_pfe = df_pfe.loc[region_index, "pfe"].to_numpy()
+    vec_cov = df_cov.loc[region_index, "coverage"].to_numpy()
+    vec_end = df_end.loc[region_index, "end"].to_numpy()
+    vec_ocf = df_ocf.loc[region_index, "ocf"].to_numpy()
+    vec_ifs = df_ifs.loc[region_index, "IFS"].to_numpy()
+    feature_vector = np.concatenate([vec_pfe, vec_cov, vec_end, vec_ocf, vec_ifs])
+    feature_vector_df = pd.DataFrame(feature_vector).T
+    feature_vector_df.insert(0, 'sample_id', sample_id)
+    print("Feature vector shape:", feature_vector_df.shape)
+    print(feature_vector_df.iloc[:, :10])  # print first 10 features
 
 
 if __name__ == "__main__":

@@ -6,10 +6,19 @@
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz -O data/source_data/hg38ToHg19.over.chain.gz
 gunzip data/source_data/hg38ToHg19.over.chain.gz
 
+# TODO ADD WGET COMMANDS FOR ATAC AND DNAS SeTS
+wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E029-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E029-DNase.hotspot.fdr0.01.broad.bed.gz
+wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E032-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E032-DNase.hotspot.fdr0.01.broad.bed.gz
+wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E034-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E034-DNase.hotspot.fdr0.01.broad.bed.gz
+wget https://api.gdc.cancer.gov/data/116ebba2-d284-485b-9121-faf73ce0a4ec -O data/source_data/TCGA-ATAC_PanCancer_PeakSet.txt
+
 # remove header from pancancer peaks file and select only thee 3 columns
-tail -n +2 /data/source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 > /data/source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt
+tail -n +2 data/source_data/TCGA-ATAC_PanCancer_PeakSet.txt | cut -f1-3 > data/source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt
+
 # liftover pancancer peaks
-./liftOver \
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver -O liftOver
+chmod +x liftOver
+liftOver \
   data/source_data/TCGA-ATAC_PanCancer_PeakSet.noheader.txt \
   data/source_data/hg38ToHg19.over.chain \
   data/processing/mat.pancancer.hg19.bed \
