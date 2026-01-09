@@ -119,27 +119,6 @@ bedtools slop -i processing/tss_autosomes.bed -g source_data/hg19.genome -l 1000
 wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz -O source_data/hg19.fa.gz
 gunzip source_data/hg19.fa.gz
 
-///////////////////////////////////////////////////////////////subsampling unused////////////////////////////////////////////////////////
-// subsampling fragments for testing
-// first filter only autosomes
-zcat source_data/bileduct_EE87788.hg19.frag.tsv.bgz | \
-awk -F"\t" 'BEGIN{OFS="\t"} $1 ~ /^[0-9]+$/ && $1 <= 22' \
-> subsampled/bileduct_autosomes.bed
-
-// add chr prefix
-awk -F"\t" 'BEGIN{OFS="\t"} {
-    chrom=$1
-    if (chrom !~ /^chr/) chrom="chr"chrom
-    $1=chrom
-    print
-}' subsampled/bileduct_autosomes.bed > subsampled/bileduct_autosomes_chr.bed
-
-// random subsample 50k (not stratified)
-cat subsampled/bileduct_autosomes_chr.bed \
-    | shuf -n 50000 \
-    > subsampled/bileduct_subsample.bed
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // full sample processing
 // first filter only autosomes
 mkdir fullsample
