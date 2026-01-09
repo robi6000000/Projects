@@ -325,17 +325,29 @@ def main():
     # vector features: df_pfe, df_cov, df_end, df_ocf, df_ifs
     # merge vecotr features on region_id and flatten
     region_index = df_region_ids["region_id"].values
+    feature_names = []
 
     vec_pfe = df_pfe.loc[region_index, "pfe"].to_numpy()
+    feature_names += [f"pfe_region_{rid}" for rid in df_pfe.index]
     vec_cov = df_cov.loc[region_index, "coverage"].to_numpy()
+    feature_names += [f"cov_region_{rid}" for rid in df_cov.index]
     vec_end = df_end.loc[region_index, "end"].to_numpy()
+    feature_names += [f"end_region_{rid}" for rid in df_end.index]
     vec_ocf = df_ocf.loc[region_index, "ocf"].to_numpy()
+    feature_names += [f"ocf_region_{rid}" for rid in df_ocf.index]
     vec_ifs = df_ifs.loc[region_index, "IFS"].to_numpy()
+    feature_names += [f"ifs_region_{rid}" for rid in df_ifs.index]
+
+
     feature_vector = np.concatenate([vec_pfe, vec_cov, vec_end, vec_ocf, vec_ifs])
-    feature_vector_df = pd.DataFrame(feature_vector).T
-    feature_vector_df.insert(0, 'sample_id', sample_id)
+    feature_vector_df = pd.DataFrame([feature_vector], columns=feature_names)
+    feature_vector_df.insert(0, "sample_id", sample_id)
+
     print("Feature vector shape:", feature_vector_df.shape)
     print(feature_vector_df.iloc[:, :10])  # print first 10 features
+
+    # TODO : non - region features could be stuck at the end after all region ids were used
+    # for these 5 features, the result is a vector of shape (1, 2807071)
 
 
 if __name__ == "__main__":
