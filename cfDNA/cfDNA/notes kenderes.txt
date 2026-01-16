@@ -1,0 +1,22 @@
+With:
+~200 samples
+SVM with default parameters
+No aggressive regularization mentioned
+
+This would:
+Overfit perfectly
+Be numerically unstable
+Make PCA itself infeasible (covariance matrix would be impossible)
+
+So the method would literally not run, let alone generalize.
+
+
+
+To avoid repeating this confusion, you should write something like:
+
+“For each cfDNA fragmentation pattern, a separate feature matrix was constructed and standardized. Dimensionality reduction and classification were performed independently for each pattern. The resulting prediction probabilities were then combined to form an ensemble classifier.”
+This will immediately signal that you understand the pipeline correctly.
+
+
+
++ we want to stack samples -> 200samples: get df_pfe to look like (200, 561k)
