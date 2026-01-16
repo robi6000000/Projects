@@ -7,3 +7,6 @@ chmod -x ./sample_features_script.py
 # sample_prep_script runs python script at the end, yielding a row of features per sample
 ./static_script.sh
 ./sample_prep_script.sh 
+
+# to test just the python script: 
+python ./sample_features_script.py EE87788 data/processing/EE87788_frag_centroids_openchrom_intersect.bed data/processing/EE87788_frag_ends_openchrom_intersect.bed data/processing/EE87788_frag_ends_ocf.bed

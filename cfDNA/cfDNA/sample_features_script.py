@@ -73,7 +73,7 @@ def main():
 
     # group by chromosome and bin and get counts
     length_matrix = (frag_centroids_openchrom_intersect
-                .groupby(["f_chrom", "len_bin"], observed=True)
+                .groupby(["f_chrom", "len_bin"])
                 .size()
                 .unstack(fill_value=0))
 
@@ -107,7 +107,7 @@ def main():
 
     # calculate P_i
     counts = (frag_centroids_openchrom_intersect
-            .groupby(["region_id", "pfe_bin"], observed=True)
+            .groupby(["region_id", "pfe_bin"])
             .size()
             .unstack(fill_value=0))
 
@@ -138,7 +138,7 @@ def main():
     )
 
     counts = (frag_centroids_openchrom_intersect
-            .groupby(["region_id", "fsr_bin"], observed=True)
+            .groupby(["region_id", "fsr_bin"])
             .size()
             .unstack(fill_value=0))
     df_fsr = counts.div(counts.sum(axis=1), axis=0)
@@ -157,7 +157,7 @@ def main():
     )
     counts = (
         frag_centroids_openchrom_intersect
-        .groupby(["f_chrom", "fsd_bin"], observed=True)
+        .groupby(["f_chrom", "fsd_bin"])
         .size()
         .unstack(fill_value=0)
     )
@@ -223,7 +223,7 @@ def main():
 
     df = df[df["window"].notna()]
     counts = (df
-            .groupby(["region_id", "window", "end_type"], observed=True)
+            .groupby(["region_id", "window", "end_type"])
             .size()
             .unstack(fill_value=0))
 
@@ -312,7 +312,7 @@ def main():
     # # now we calculate proportions of each motif at each end per chromosome - 256x22
     # motif_counts = (
     #     ends
-    #     .groupby(['f_chrom', 'motif'], observed=True)
+    #     .groupby(['f_chrom', 'motif'])
     #     .size()
     #     .unstack(fill_value=0)
     # )
@@ -324,27 +324,51 @@ def main():
 
     # vector features: df_pfe, df_cov, df_end, df_ocf, df_ifs
     # merge vecotr features on region_id and flatten
+    # matrix features: df_length, df_fsr, df_fsd, df_motif
     region_index = df_region_ids["region_id"].values
+
+    # (df, value_column, feature_prefix)
+    vec_features = [
+        (df_pfe, "pfe", "pfe"),
+        (df_cov, "coverage", "cov"),
+        (df_end, "end", "end"),
+        (df_ocf, "ocf", "ocf"),
+        (df_ifs, "IFS", "ifs"),
+    ]
+    mx_features = [
+        (df_length, None, "len"),
+        (df_fsr, None, "fsr"),
+        (df_fsd, None, "fsd"),
+        # (df_motif, None, "motif"),
+    ]
+
+    feature_vectors = []
     feature_names = []
 
-    vec_pfe = df_pfe.loc[region_index, "pfe"].to_numpy()
-    feature_names += [f"pfe_region_{rid}" for rid in df_pfe.index]
-    vec_cov = df_cov.loc[region_index, "coverage"].to_numpy()
-    feature_names += [f"cov_region_{rid}" for rid in df_cov.index]
-    vec_end = df_end.loc[region_index, "end"].to_numpy()
-    feature_names += [f"end_region_{rid}" for rid in df_end.index]
-    vec_ocf = df_ocf.loc[region_index, "ocf"].to_numpy()
-    feature_names += [f"ocf_region_{rid}" for rid in df_ocf.index]
-    vec_ifs = df_ifs.loc[region_index, "IFS"].to_numpy()
-    feature_names += [f"ifs_region_{rid}" for rid in df_ifs.index]
+    for df, col, prefix in vec_features:
+        vec = df.loc[region_index, col].to_numpy()
+        feature_vectors.append(vec)
 
+        feature_names.extend(
+            [f"{prefix}_region_{rid}" for rid in df.index]
+        )
+    for mx, col, prefix in mx_features:
+        # print(prefix, mx.shape)
+        for chrom in mx.index:
+            row = mx.loc[chrom]
+            vec = row.to_numpy()
+            feature_vectors.append(vec)
+            print(f"  {chrom} vec shape: {vec.shape}")
+            feature_names.extend(
+                [f"{prefix}_{chrom}_bin_{b}" for b in row.index]
+            )
 
-    feature_vector = np.concatenate([vec_pfe, vec_cov, vec_end, vec_ocf, vec_ifs])
+    # final 1D feature vector
+    feature_vector = np.concatenate(feature_vectors)
     feature_vector_df = pd.DataFrame([feature_vector], columns=feature_names)
     feature_vector_df.insert(0, "sample_id", sample_id)
 
     print("Feature vector shape:", feature_vector_df.shape)
-    print(feature_vector_df.iloc[:, :10])  # print first 10 features
 
     # TODO : non - region features could be stuck at the end after all region ids were used
     # for these 5 features, the result is a vector of shape (1, 2807071)

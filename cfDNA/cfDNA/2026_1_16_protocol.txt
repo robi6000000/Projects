@@ -1,0 +1,3 @@
+# testing the python script
+python ./sample_features_script.py EE87788 data/processing/EE87788_frag_centroids_openchrom_intersect.bed data/processing/EE87788_frag_ends_openchrom_intersect.bed data/processing/EE87788_frag_ends_ocf.bed
+
