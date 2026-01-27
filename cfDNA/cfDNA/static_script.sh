@@ -6,7 +6,7 @@
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz -O data/source_data/hg38ToHg19.over.chain.gz
 gunzip data/source_data/hg38ToHg19.over.chain.gz
 
-# TODO ADD WGET COMMANDS FOR ATAC AND DNAS SeTS
+# WGET COMMANDS FOR ATAC AND DNAS SeTS
 wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E029-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E029-DNase.hotspot.fdr0.01.broad.bed.gz
 wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E032-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E032-DNase.hotspot.fdr0.01.broad.bed.gz
 wget https://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidated/broadPeak/E034-DNase.hotspot.fdr0.01.broad.bed.gz -O data/source_data/E034-DNase.hotspot.fdr0.01.broad.bed.gz
@@ -24,52 +24,83 @@ liftOver \
   data/processing/mat.pancancer.hg19.bed \
   data/processing/mat.unmapped.hg19.bed
 
-# dnaseq files - unzip and select only 3 columns (pancancer also has header)
+# pipe version of processing dna and atacseq
 ( zcat data/source_data/E029-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ; 
   zcat data/source_data/E032-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
   zcat data/source_data/E034-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
-  cat data/processing/mat.pancancer.hg19.bed ) \
-  > data/processing/all_openchrom_regions.bed
-# sort and merge to get open chromatin union
-sort -k1,1V -k2,2n data/processing/all_openchrom_regions.bed > data/processing/all_openchrom_regions.sorted.bed
-bedtools merge -i data/processing/all_openchrom_regions.sorted.bed > data/processing/openchrom_union.bed
+  cat data/processing/mat.pancancer.hg19.bed ) | \
+  sort -k1,1V -k2,2n | \
+  bedtools merge | \
+  awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' | \
+  awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' | \
+  awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
+  > data/processing/openchrom_with_id.bed 
 
-# Autosomes = chromosomes 1–22 (exclude x,y) etc
-awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' data/processing/openchrom_union.bed > data/processing/openchrom_union_autosomes.bed
-wc -l data/processing/openchrom_union_autosomes.bed
-# bin the open chromatin regions
-# 200bp centered regions - calculate centroid and add 100bp each side
-awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' data/processing/openchrom_union_autosomes.bed > data/processing/openchrom_200bp.bed
-# add region ids
-awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
-    data/processing/openchrom_200bp.bed \
-    > data/processing/openchrom_with_id.bed
-
-# print head
-# head data/processing/openchrom_with_id.bed
 # get reference genome chromosome sizes
 wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes -O data/source_data/hg19.genome
 
-
-# get TSS positions from gencode gtf
+# pipe version of processing tss 
 awk 'BEGIN{OFS="\t"} 
 $3=="transcript" {
     if ($7 == "+") print $1, $4, $4, ".", ".", $7;
     else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
-}' data/source_data/gencode.v30lift37.annotation.gtf > data/processing/tss_raw.bed
-
-
-# check chromosomes and filter:
-cut -f1 data/processing/tss_raw.bed | sort | uniq -c
-awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' data/processing/tss_raw.bed > data/processing/tss_autosomes.bed
-
-
+}' data/source_data/gencode.v30lift37.annotation.gtf | \
+awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' > data/processing/tss_autosomes.bed
 bedtools slop -i data/processing/tss_autosomes.bed -g data/source_data/hg19.genome -l 150 -r 50 -s > data/processing/tss_150_50.bed
-bedtools slop -i data/processing/tss_autosomes.bed -g data/source_data/hg19.genome -l 1000 -r 1000 -s > data/processing/tss_1000_1000.bed
+bedtools slop -i data/processing/tss_autosomes.bed -g data/source_data/hg19.genome -l 1000 -r 1000 -s > data
 
 # get reference genome fasta for end motif:
 wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz -O data/source_data/hg19.fa.gz
 gunzip data/source_data/hg19.fa.gz
-mkdir data/fullsample
+
+# make a directory for whole samples
+mkdir data/external
+mkdir data/external/cristiano
+mkdir data/sample_temp
+
+# # OLD
+# # dnaseq files - unzip and select only 3 columns (pancancer also has header)
+# ( zcat data/source_data/E029-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ; 
+#   zcat data/source_data/E032-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
+#   zcat data/source_data/E034-DNase.hotspot.fdr0.01.broad.bed.gz | cut -f1-3 ;
+#   cat data/processing/mat.pancancer.hg19.bed ) \
+#   > data/processing/all_openchrom_regions.bed
+# # sort and merge to get open chromatin union
+# sort -k1,1V -k2,2n data/processing/all_openchrom_regions.bed > data/processing/all_openchrom_regions.sorted.bed
+# bedtools merge -i data/processing/all_openchrom_regions.sorted.bed > data/processing/openchrom_union.bed
+
+# # Autosomes = chromosomes 1–22 (exclude x,y) etc
+# awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' data/processing/openchrom_union.bed > data/processing/openchrom_union_autosomes.bed
+# wc -l data/processing/openchrom_union_autosomes.bed
+# # bin the open chromatin regions
+# # 200bp centered regions - calculate centroid and add 100bp each side
+# awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' data/processing/openchrom_union_autosomes.bed > data/processing/openchrom_200bp.bed
+# # add region ids
+# awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
+#     data/processing/openchrom_200bp.bed \
+#     > data/processing/openchrom_with_id.bed
+
+# # TSS
+# print head
+# head data/processing/openchrom_with_id.bed
+# # OLD
+# # get TSS positions from gencode gtf
+# awk 'BEGIN{OFS="\t"} 
+# $3=="transcript" {
+#     if ($7 == "+") print $1, $4, $4, ".", ".", $7;
+#     else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
+# }' data/source_data/gencode.v30lift37.annotation.gtf > data/processing/tss_raw.bed
+
+
+# # check chromosomes and filter:
+# cut -f1 data/processing/tss_raw.bed | sort | uniq -c
+# awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' data/processing/tss_raw.bed > data/processing/tss_autosomes.bed
+
+
+# bedtools slop -i data/processing/tss_autosomes.bed -g data/source_data/hg19.genome -l 150 -r 50 -s > data/processing/tss_150_50.bed
+# bedtools slop -i data/processing/tss_autosomes.bed -g data/source_data/hg19.genome -l 1000 -r 1000 -s > data/processing/tss_1000_1000.bed
+
 
 # here ends the static processing
+
+
