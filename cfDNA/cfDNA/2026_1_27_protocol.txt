@@ -1,0 +1,10 @@
+# create build_reference.sbatch to schedule a job on andromeda
+# job only contains static_script.sh, which still runs a pretty long time
+
+# run it from /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA using 
+mkdir -p logs
+sbatch scripts/build_reference.sbatch
+
+# monitor job using 
+squeue
+

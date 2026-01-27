@@ -1,0 +1,5 @@
+--2026-01-27 16:32:54--  https://finaledb.research.cchmc.org/frag_tsv_hg19
+Resolving finaledb.research.cchmc.org (finaledb.research.cchmc.org)... 99.83.183.127, 3.33.193.101, 15.197.246.237, ...
+Connecting to finaledb.research.cchmc.org (finaledb.research.cchmc.org)|99.83.183.127|:443... connected.
+OpenSSL: error:0A000458:SSL routines::tlsv1 unrecognized name
+Unable to establish SSL connection.
