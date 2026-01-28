@@ -10,8 +10,8 @@ set -euo pipefail
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 
 MANIFEST=data/manifest/cristiano_manifest.csv
-OUTDIR=data/source/cristiano
-INDEX=1   # <-- change this to test different samples
+OUTDIR=data/source/cristiano/
+INDEX=2   
 BASE=https://finaledb.research.cchmc.org/
 
 mkdir -p "$OUTDIR"
