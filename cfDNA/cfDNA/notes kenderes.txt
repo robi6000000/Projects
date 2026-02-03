@@ -19,4 +19,11 @@ This will immediately signal that you understand the pipeline correctly.
 
 
 
+
 + we want to stack samples -> 200samples: get df_pfe to look like (200, 561k)
+
+
+# TODO 
+wget -c https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/entries/EE87786/hg19/EE87786.hg19.frag.tsv.bgz
+tento link uz funguje, staci iba pouzit tuto predponu v download skripte:
+https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/
