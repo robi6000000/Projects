@@ -5,6 +5,7 @@
 #SBATCH --time=00:30:00
 #SBATCH --mem=1G
 
+echo "starting test"
 set -euo pipefail
 
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
@@ -12,7 +13,7 @@ cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 MANIFEST=data/manifest/cristiano_manifest.csv
 OUTDIR=data/source/cristiano/
 INDEX=2   
-BASE=https://finaledb.research.cchmc.org/
+BASE=https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/
 
 mkdir -p "$OUTDIR"
 

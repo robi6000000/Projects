@@ -17,10 +17,8 @@ for r in data["results"]:
     authors = r.get("publication", {}).get("author", [])
     if not any(author in a for a in authors):
         continue
-
     if r["seqConfig"]["readlen"] != 100:
         continue
-
     if r["seqConfig"]["instrument"] != "HiSeq 2000":
         continue
 
@@ -36,7 +34,6 @@ for r in data["results"]:
             if x["desc"] == "fragment"
         )
     })
-
 df = pd.DataFrame(rows)
 df.to_csv("./data/manifest/cristiano_manifest.csv", index=False)
 
