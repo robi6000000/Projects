@@ -1,0 +1,12 @@
+Core ideas - griffin paper
+
+- developed a method called griffin for cancer detection and subtype classification using 3 main features 
+- central coverage, mean coverage and overall nucleosome peak amplitude(calculated using fourier transform)
+and showed that gc bias correction shows way better results when applied per fragment length bins 
+
+GC correction - example : 120bp fragment having a 55% gc bias will need a different gc correction multiplier than
+55% gc bias on a 180bp fragment -> inaccurate and unreliable correction
+
+it is very adjustable / scalable -> takes any input unlike zhous 560k beginning chromatin region thats hardcoded
+it is cheap
+performance is dependant on tumor fraction -> 5% is lower limit anything below that is almost random

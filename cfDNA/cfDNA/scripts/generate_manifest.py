@@ -13,6 +13,7 @@ with open("./data/candidates.json") as file:
 rows = []
 author = input("Enter author name:")
 
+# zohnat co najviac metadat (stages etc)
 for r in data["results"]:
     authors = r.get("publication", {}).get("author", [])
     if not any(author in a for a in authors):

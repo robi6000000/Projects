@@ -1,0 +1,60 @@
+gsca_pca_00001_01_01_pl_R1.fastq.gz
+gsca_pca_00001_01_01_pl_R2.fastq.gz
+
+# copying a sample of reads to interanl directory for testing
+ln -s /data/projects/liquid_biopsy/reads/original/gsca_pca_00001_01_01_pl_R1.fastq.gz /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz
+ln -s /data/projects/liquid_biopsy/reads/original/gsca_pca_00001_01_01_pl_R2.fastq.gz /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz
+
+# need the following for snakemake to work: 
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz
+# saved to data/hg19/human_g1k_v37.fa.gz
+# we also nee to build index for this
+bwa index human_g1k_v37.fa.gz
+samtools faidx human_g1k_v37.fa.gz
+
+# because:
+b37
+The Broad Institute created a human genome reference file based on GRCh37. This reference is often referred to as b37 
+(Homo_sapiens_assembly19.fasta, MD5sum: 886ba1559393f75872c1cf459eb57f2d).
+
+When people at The Broad Institute's Genomics Platform refer to the hg19 reference, they are actually referring to b37.
+
+The humanG1Kv37 (human_g1k_v37.fasta, MD5sum: 0ce84c872fc0072a885926823dcd0338) reference is equivalent to b37, with the exception that it 
+does not contain the decoy sequence for human herpesvirus 4 type 1 (named NC007605_). This reference grew out of the 1000 Genomes Project.
+
+# create chrom sizes file:
+cut -f1,2 data/hg19/human_g1k_v37.fa.gz.fai \
+  > data/hg19/human_g1k_v37.chrom.sizes
+
+# create symlinks to reference genomes so that it refers to the unzipped files
+cd data/hg19
+ln -s human_g1k_v37.fa human_g1k_v37.fa.gz
+ln -s human_g1k_v37.fa.fai human_g1k_v37.fa.gz.fai
+
+# in order to run, we need older python so we create a separate environment for it:
+conda create -n snakemake -c conda-forge python=3.11 snakemake
+
+# fixing bug with supplementary file in snakemake: 
+mkdir -p supplementary
+wget https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE-2.fa \
+     -O supplementary/TruSeq3-PE-2.fa
+
+# dry run - testing out
+snakemake \
+  -s finaledb_workflow/finaledb.smk \
+  --use-conda \
+  --cores 1 \
+  -n   frag/gsca_pca_00001_01_01_pl.hg19.frag.bed.gz
+
+# full run (on one sample)
+snakemake \
+  -s finaledb_workflow/finaledb.smk \
+  --use-conda \
+  --cores 1 \
+  frag/gsca_pca_00001_01_01_pl.hg19.frag.bed.gz
+
+
+#TODO finish reindexing on zipped references and rerun the script
+#TODO bwa samblaster moze byt problem
+#TODO writing - mention subsampling
+#TODO write up data section, maybe data processing pipeline
