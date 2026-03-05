@@ -1,3 +1,8 @@
 /cfDNA/data/
-/cfDNA/logs/
+/cfDNA/cfDNA/data/
+/cfDNA/cfDNA/logs/
 /cfDNA/.snakemake/
+/cfDNA/trimmomatic/
+/cfDNA/supplementary/
+/cfDNA/fastq/
+/cfDNA/bam/

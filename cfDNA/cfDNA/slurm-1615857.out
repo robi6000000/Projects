@@ -1,0 +1,100 @@
+
+CondaError: Run 'conda init' before 'conda activate'
+
+Assuming unrestricted shared filesystem usage.
+host: gen-compute01.cusp.uniba.sk
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                count
+---------------  -------
+bam_sort               1
+bwa_raw                1
+infer_fragments        1
+trimmomatic            1
+total                  4
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Feb  9 14:11:47 2026]
+localrule trimmomatic:
+    input: fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz, fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz, supplementary/TruSeq3-PE-2.fa
+    output: trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz
+    log: trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt
+    jobid: 2
+    reason: Missing output files: trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz
+    wildcards: sample=gsca_pca_00001_01_01_pl
+    resources: tmpdir=/tmp, time=2880, time_min=300, mem_mb=1800, mem=1.8 GB, mem_mib=1717
+/usr/bin/bash: line 4: trimmomatic: command not found
+RuleException:
+CalledProcessError in file "/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/finaledb_workflow/finaledb.smk", line 73:
+Command 'set -euo pipefail;  
+        set +u; if [ -z $LOCAL ] || [ -z $SLURM_CLUSTER_NAME ]; then tmpdir=$(mktemp -d); else tmpdir=$(mktemp -d -p $LOCAL); fi; set -u
+
+        trimmomatic PE -threads 8 fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz $tmpdir/R1.paired.gz $tmpdir/R1.unpaired.gz $tmpdir/R2.paired.gz $tmpdir/R2.unpaired.gz  ILLUMINACLIP:supplementary/TruSeq3-PE-2.fa:2:30:10:2:true TRAILING:5 AVGQUAL:20 MINLEN:36  2> >(tee trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt >&2)
+
+        mv $tmpdir/R1.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp
+        mv $tmpdir/R1.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp
+        mv $tmpdir/R2.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp
+        mv $tmpdir/R2.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp
+
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz' returned non-zero exit status 127.
+[Mon Feb  9 14:11:48 2026]
+Error in rule trimmomatic:
+    message: None
+    jobid: 2
+    input: fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz, fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz, supplementary/TruSeq3-PE-2.fa
+    output: trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz
+    log: trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt (check log file(s) for error details)
+    shell:
+        
+        set +u; if [ -z $LOCAL ] || [ -z $SLURM_CLUSTER_NAME ]; then tmpdir=$(mktemp -d); else tmpdir=$(mktemp -d -p $LOCAL); fi; set -u
+
+        trimmomatic PE -threads 8 fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz $tmpdir/R1.paired.gz $tmpdir/R1.unpaired.gz $tmpdir/R2.paired.gz $tmpdir/R2.unpaired.gz  ILLUMINACLIP:supplementary/TruSeq3-PE-2.fa:2:30:10:2:true TRAILING:5 AVGQUAL:20 MINLEN:36  2> >(tee trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt >&2)
+
+        mv $tmpdir/R1.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp
+        mv $tmpdir/R1.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp
+        mv $tmpdir/R2.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp
+        mv $tmpdir/R2.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp
+
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz
+        
+        (command exited with non-zero exit code)
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Mon Feb  9 14:11:49 2026]
+Error in rule trimmomatic:
+    message: None
+    jobid: 2
+    input: fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz, fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz, supplementary/TruSeq3-PE-2.fa
+    output: trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz
+    log: trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt (check log file(s) for error details)
+    shell:
+        
+        set +u; if [ -z $LOCAL ] || [ -z $SLURM_CLUSTER_NAME ]; then tmpdir=$(mktemp -d); else tmpdir=$(mktemp -d -p $LOCAL); fi; set -u
+
+        trimmomatic PE -threads 8 fastq/gsca_pca_00001_01_01_pl.R1.fastq.gz fastq/gsca_pca_00001_01_01_pl.R2.fastq.gz $tmpdir/R1.paired.gz $tmpdir/R1.unpaired.gz $tmpdir/R2.paired.gz $tmpdir/R2.unpaired.gz  ILLUMINACLIP:supplementary/TruSeq3-PE-2.fa:2:30:10:2:true TRAILING:5 AVGQUAL:20 MINLEN:36  2> >(tee trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt >&2)
+
+        mv $tmpdir/R1.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp
+        mv $tmpdir/R1.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp
+        mv $tmpdir/R2.paired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp
+        mv $tmpdir/R2.unpaired.gz trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp
+
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fastq.gz
+        mv trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz.tmp trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fastq.gz
+        
+        (command exited with non-zero exit code)
+Complete log(s): /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/.snakemake/log/2026-02-09T141147.193945.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

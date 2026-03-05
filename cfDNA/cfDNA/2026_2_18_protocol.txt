@@ -1,0 +1,4 @@
+cd Projects/cfDNA/cfDNA
+
+# get json strings of samples in finaledb using filter hiseq2000
+curl "http://finaledb.research.cchmc.org/api/v1/seqrun?instrument=HiSeq%202000&limit=20" | jq 

@@ -36,17 +36,9 @@ bedtools intersect -a - -b ./data/processing/openchrom_with_id.bed -wa -wb \
     > ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
 
 
-# for OCF we also need fragment end information intersected with openchrom
-# add a centroid column
-awk 'BEGIN{OFS="\t"} {
-    c=int(($2+$3)/2);
-    print $1, $2, $3, c, $4
-}' ./data/processing/openchrom_with_id.bed \
-> ./data/processing/openchrom_with_id_centroid.bed
-
 # intersect fragends with oc centroids (and selecting only relevant colmns)
 bedtools intersect \
-  -a ./data/processing/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
+  -a ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
   -b ./data/processing/openchrom_with_id_centroid.bed \
   -wa -wb | \
 awk 'BEGIN{OFS="\t"} {
@@ -63,8 +55,19 @@ awk 'BEGIN{OFS="\t"} {
 }' \
 > ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
 
-python sample_features_script.py \
+python ./scripts/sample_features_script.py \
   $SAMPLE_ID \
   ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed \
   ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
   ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed 
+
+if [ $? -eq 0 ]; then
+    echo "job finished succesfully, deleting temp files"
+    rm ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
+else
+    echo "job failed"
+    exit 1
+fi
