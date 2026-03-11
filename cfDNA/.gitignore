@@ -1,6 +1,7 @@
 /cfDNA/data/
 /cfDNA/cfDNA/data/
 /cfDNA/cfDNA/logs/
+cfDNA/logs/
 /cfDNA/.snakemake/
 /cfDNA/trimmomatic/
 /cfDNA/supplementary/

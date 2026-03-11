@@ -6,6 +6,7 @@
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=1
 
+# script made solely because fsr matrix computatioin needs more memory and cant be run with matrix_build_array.sbatch
 set -euo pipefail
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 

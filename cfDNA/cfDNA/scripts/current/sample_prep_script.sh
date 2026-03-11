@@ -36,26 +36,32 @@ bedtools intersect -a - -b ./data/processing/openchrom_with_id.bed -wa -wb \
     > ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
 
 
-# Join with centroid file on region_id
-join -1 5 -2 4 -t $'\t' \
-  ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed \
-  <(sort -k4,4n ./data/processing/openchrom_with_id_centroid.bed) | \
 awk 'BEGIN{OFS="\t"} {
-    region_id = $1
-    chrom = $2
-    end1 = $3
-    end2 = $4
-    end_type = $5
-    centroid = $9
-    rel_pos = end1 - centroid
-    print chrom, end1, end2, end_type, $7, $8, region_id, centroid, rel_pos
-}' > ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
+    region_id = $11
+    print $1, $4, $4+1, "U", region_id
+    print $1, $5, $5+1, "D", region_id
+}' ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed \
+> ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed
 
-python ./scripts/current/sample_features_script.py \
-  $SAMPLE_ID \
-  ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed \
-  ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
-  ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed 
+# Match with centroids
+awk 'BEGIN{OFS="\t"}
+NR==FNR {
+    centroid[$4] = $4
+    next
+}
+{
+    region_id = $5
+    if (region_id in centroid) {
+        chrom = $1
+        end1 = $2
+        end2 = $3
+        end_type = $4
+        rel_pos = end1 - centroid[region_id]
+        print chrom, end1, end2, end_type, ".", ".", region_id, centroid[region_id], rel_pos
+    }
+}' ./data/processing/openchrom_with_id_centroid.bed \
+   ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed \
+> ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
 
 if [ $? -eq 0 ]; then
     echo "job finished succesfully, deleting temp files"
