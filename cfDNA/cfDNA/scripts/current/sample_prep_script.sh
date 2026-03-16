@@ -63,6 +63,12 @@ NR==FNR {
    ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed \
 > ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
 
+python ./scripts/current/sample_features_script.py \
+  $SAMPLE_ID \
+  ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed \
+  ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
+  ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
+
 if [ $? -eq 0 ]; then
     echo "job finished succesfully, deleting temp files"
     rm ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed

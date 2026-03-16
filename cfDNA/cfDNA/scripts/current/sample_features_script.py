@@ -318,7 +318,7 @@ class SampleFeatures:
                 .size()
                 .unstack(fill_value=0))
         counts = counts.reindex(columns=all_bins, fill_value=0)
-        df_fsr = counts.div(counts.sum(axis=1), axis=0)
+        df_fsr = counts.div(counts.sum(axis=1), axis=0).fillna(0)
 
         # merge with region ids to fill blanks
         df_fsr = df_fsr.merge(self.df_region_ids, on="region_id", how="right").set_index('region_id')
@@ -355,7 +355,7 @@ class SampleFeatures:
             .unstack(fill_value=0)
         )
         counts = counts.reindex(columns=all_bins, fill_value=0)
-        df_fsd = counts.div(counts.sum(axis=1), axis=0)
+        df_fsd = counts.div(counts.sum(axis=1), axis=0).fillna(0)
 
         # reorder for possible plotting
         chrom_order = [f"chr{i}" for i in range(1, 23)]
@@ -624,7 +624,7 @@ if __name__ == "__main__":
         frag_ends_ocf_path,
         hg19_fasta_path,
         rerun=True,
-        rerun_features=['ocf']
+        rerun_features=['fsd','fsr']
     )
     # feature_vector_df = sample_features.make_feature_vector()
     # data_temp_path = f'./data/rows_sample_temp/{sample_id}_features.csv'
