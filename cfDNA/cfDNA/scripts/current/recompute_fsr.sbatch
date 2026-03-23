@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=re_ocf
-#SBATCH --output=logs/ocf_%A_%a.out
-#SBATCH --error=logs/ocf_%A_%a.err
+#SBATCH --job-name=re_fsr
+#SBATCH --output=logs/fsr_%A_%a.out
+#SBATCH --error=logs/fsr_%A_%a.err
 #SBATCH --array=1-459%20
 #SBATCH --time=04:00:00
 #SBATCH --mem=8G

@@ -46,6 +46,7 @@ class SampleFeatures:
             elif self.rerun_features is None:
                 return False
             elif feature_name in self.rerun_features:
+                print(f'recomputing {feature_name}')
                 return False
             else:
                 return True
@@ -320,8 +321,9 @@ class SampleFeatures:
         counts = counts.reindex(columns=all_bins, fill_value=0)
         df_fsr = counts.div(counts.sum(axis=1), axis=0).fillna(0)
 
-        # merge with region ids to fill blanks
+        # merge with region ids to fill the regions with no fragments
         df_fsr = df_fsr.merge(self.df_region_ids, on="region_id", how="right").set_index('region_id')
+        df_fsr = df_fsr.fillna(0)
         print("df_fsr:", df_fsr.shape)
         df_fsr.to_csv(filename)
         return df_fsr
@@ -415,6 +417,7 @@ class SampleFeatures:
     
     def get_ocf(self):
         filename = f"./data/cristiano_features/ocf/{self.sample_id}_ocf.csv"
+        print("calculating ocf")
         
         if self._use_saved_file(filename, 'ocf'):
             print(f"file already exists {self.sample_id}")
@@ -439,13 +442,26 @@ class SampleFeatures:
                 .size()
                 .unstack(fill_value=0))
 
+        # calculate D-U and U-D for both windows, use D-U for left window and U-D for right window
         counts["left_term"] = (counts.get("D", 0) - counts.get("U", 0))
         counts["right_term"] = (counts.get("U", 0) - counts.get("D", 0))
 
-        ocf = (counts
-                .groupby("region_id")[["left_term", "right_term"]]
-                .sum()
-                .sum(axis=1))
+        counts['left_window'] = np.where(
+            counts.index.get_level_values('window') == "left", 
+            counts["left_term"], 0)
+        counts['right_window'] = np.where(
+            counts.index.get_level_values('window') == "right", 
+            counts["right_term"], 0)
+
+        ocf_left = counts.groupby("region_id")["left_window"].sum()
+        ocf_right = counts.groupby("region_id")["right_window"].sum()
+
+        ocf = ocf_left + ocf_right
+
+        print(f"OCF describe:")
+        print(ocf.describe())
+
+        print(ocf.head(20))
                 
         df_ocf = (self.df_region_ids
                 .merge(ocf.rename("ocf"), on="region_id", how="left")
@@ -541,9 +557,24 @@ class SampleFeatures:
         df_wps.to_csv(filename)
         return df_wps
 
-    def _get_edm_motif(self, df, k=4):
-        # helper function to get 4 base motif at 5' end positions
-        # df input is a groupby dataframe
+    def _reverse_complement(self, seq):
+        """
+        Takes non-reversed end sequence of the 3' downstream end as input.
+        Returns reverse complement.
+        """
+        map = {"A": "T", "T": "A", 
+               "C": "G", "G": "C"}
+        res = ""
+        for char in seq:
+            res += map.get(char, 'N') 
+        return res[::-1]
+        
+
+    def _get_edm_motif(self, df, strand, k=4):
+        """
+        Helper function to get 4 base motif at 5' U or 3' D end position.
+        df input is a groupby dataframe.
+        """
         chrom = df.name  
         
         if chrom not in self.hg19_fasta:
@@ -553,10 +584,19 @@ class SampleFeatures:
         motifs = []
         
         for pos in df['pos'].values:
-            if pos >= 0 and pos + k <= len(seq):
-                motif = str(seq[pos:pos+k].seq).upper()
-                motifs.append(motif)
+            if strand == "+":
+                start = pos
+                end = pos + k
             else:
+                start = pos - k
+                end = pos
+            try:
+                motif_seq = str(seq[start:end].seq).upper()
+                if strand == "-":
+                    motif_seq = self._reverse_complement(motif_seq)
+                motifs.append(motif_seq)
+            except Exception as e:
+                print(f'Error: {chrom}, {start}, {end}, {e}')
                 motifs.append(None)
         
         return pd.Series(motifs, index=df.index)
@@ -572,24 +612,24 @@ class SampleFeatures:
         # get end positions
         ends_5 = self.frag_centroids_openchrom_intersect[["f_chrom", "f_start"]].copy()
         ends_5 = ends_5.rename(columns={"f_start": "pos"})
-                
+        # TODO split by + and - strand, get reverse complements for fragments read on the - strands
+        ends_5_U = self.frag_centroids_openchrom_intersect[self.frag_centroids_openchrom_intersect["strand"] == "+"]
+        ends_3_D = self.frag_centroids_openchrom_intersect[self.frag_centroids_openchrom_intersect["strand"] == "-"]    
+        ends_5_U = ends_5_U.rename(columns={"f_start": "pos"})
+        ends_3_D = ends_3_D.rename(columns={"f_end": "pos"})
+
         # get motifs at each position
-        ends_5['motif'] = (
-            ends_5
-            .groupby('f_chrom', group_keys=False)
-            .apply(self._get_edm_motif, k=4)
-        )
-        ends_5 = ends_5[ends_5['motif'].notna()]
-        ends_5 = ends_5[ends_5['motif'].str.match('^[ACGT]{4}$')]
+        ends_5_U["motif"] = ends_5_U.groupby("f_chrom").apply(lambda df: self._get_edm_motif(df, strand="+")).reset_index(level=0, drop=True)
+        ends_3_D["motif"] = ends_3_D.groupby("f_chrom").apply(lambda df: self._get_edm_motif(df, strand="-")).reset_index(level=0, drop=True)
                 
         # count and convert to proportions
         motif_counts = (
-            ends_5
-            .groupby(['f_chrom', 'motif'])
+            pd.concat([ends_5_U, ends_3_D])
+            .groupby(["f_chrom", "motif"])
             .size()
             .unstack(fill_value=0)
         )
-        # have tp reindex to include all motifs
+        # have to reindex to include all motifs
         all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
         motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
 
@@ -602,6 +642,18 @@ class SampleFeatures:
         print(f"df_edm: {df_edm.shape}")
         df_edm.to_csv(filename)
         return df_edm
+    
+    def get_edm_5(self):
+        """
+        get edm matrix for 5' end motifs only
+        """
+        pass
+
+    def get_edm_3(self):
+        """
+        get edm matrix for 3' end motifs only
+        """
+        pass
         
 
 
@@ -624,8 +676,9 @@ if __name__ == "__main__":
         frag_ends_ocf_path,
         hg19_fasta_path,
         rerun=True,
-        rerun_features=['fsd','fsr']
+        rerun_features=['fsr']
     )
+    sample_features.calculate_features()
     # feature_vector_df = sample_features.make_feature_vector()
     # data_temp_path = f'./data/rows_sample_temp/{sample_id}_features.csv'
     # feature_vector_df.to_csv(data_temp_path, index=False)

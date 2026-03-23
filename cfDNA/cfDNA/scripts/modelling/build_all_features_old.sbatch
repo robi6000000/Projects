@@ -16,6 +16,6 @@ FEATURE=${FEATURES[$((SLURM_ARRAY_TASK_ID - 1))]}
 
 echo "Array task $SLURM_ARRAY_TASK_ID: Building $FEATURE matrix"
 
-bash scripts/modelling/build_feature_matrix.sh "$FEATURE"
+bash scripts/modelling/build_feature_matrix_old.sh "$FEATURE"
 
 echo "$FEATURE complete"

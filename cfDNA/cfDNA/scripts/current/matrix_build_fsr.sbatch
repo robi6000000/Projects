@@ -10,6 +10,10 @@
 set -euo pipefail
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 
+source /data/users/kenderes/miniconda3/etc/profile.d/conda.sh
+conda activate cfdna
+
+
 python scripts/current/matrix_build.py fsr
 
 echo "Fsr complete"

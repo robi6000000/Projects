@@ -15,9 +15,6 @@ awk -F"\t" 'BEGIN{OFS="\t"} $1 ~ /^[0-9]+$/ && $1 <= 22 {
     print
 }' > ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed
 
-# # create fragment centroid file from sample (moving centroids to 2 and 3 positions so intersect works for the centroids not fragment boundaries)
-# awk 'BEGIN{OFS="\t"} {centroid=int(($2+$3)/2); print $1, centroid, centroid, $2, $3, $4, $5}' ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed > ./data/sample_temp/${SAMPLE_ID}_fragments_centroids.bed
-
 # bedtools intersect -a ./data/sample_temp/${SAMPLE_ID}_fragments_centroids.bed -b ./data/processing/openchrom_with_id.bed -wa -wb > ./data/processing/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
 
 # this is the file that will be used for most of the analysis
@@ -30,12 +27,31 @@ bedtools intersect -a - -b ./data/processing/openchrom_with_id.bed -wa -wb \
 
 # for fragment ends, we need to create a separate bedfile, intersecting openchrom regions with fragment start and ends, can t use the centroid file
 # create 2 lines from each fragment - one start, one end
-awk 'BEGIN{OFS="\t"} {u=int(($2)); print $1,u,u+1,"U"; d=int($3)-1; print $1,d,d+1,"D"}' \
-    ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed | \
-bedtools intersect -a - -b ./data/processing/openchrom_with_id.bed -wa -wb \
+# U for upstream end, D for downastream end. (if +, othewise if -, start is D and end is U)
+# # OLD
+# awk 'BEGIN{OFS="\t"} {u=int(($2)); print $1,u,u+1,"U"; d=int($3)-1; print $1,d,d+1,"D"}' \
+#     ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed | \
+# bedtools intersect -a - -b ./data/processing/openchrom_with_id.bed -wa -wb \
+#     > ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
+awk 'BEGIN{OFS="\t"} {
+    chrom = $1
+    start = $2
+    end = $3
+    score = $4
+    strand = $5
+    if (strand == "+") {
+        print chrom, start, start+1, "U", score, strand
+        print chrom, end-1, end, "D", score, strand
+    } else if (strand == "-") {
+        print chrom, start, start+1, "D", score, strand
+        print chrom, end-1, end, "U", score, strand
+    }
+}' ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed > ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed
+bedtools intersect -a ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed -b ./data/processing/openchrom_with_id.bed -wa -wb \
     > ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
 
 
+# OCF - we need 
 awk 'BEGIN{OFS="\t"} {
     region_id = $11
     print $1, $4, $4+1, "U", region_id
@@ -44,9 +60,10 @@ awk 'BEGIN{OFS="\t"} {
 > ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed
 
 # Match with centroids
+# store centroid postion with region id as key
 awk 'BEGIN{OFS="\t"}
 NR==FNR {
-    centroid[$4] = $4
+    centroid[$5] = $4
     next
 }
 {
@@ -70,11 +87,13 @@ python ./scripts/current/sample_features_script.py \
   ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
 
 if [ $? -eq 0 ]; then
-    echo "job finished succesfully, deleting temp files"
+    echo "job finished successfully, deleting temp files"
     rm ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed
     rm ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
     rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
     rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed  
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed         
 else
     echo "job failed"
     exit 1
