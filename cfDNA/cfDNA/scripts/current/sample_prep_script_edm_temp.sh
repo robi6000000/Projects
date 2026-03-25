@@ -39,12 +39,15 @@ awk 'BEGIN{OFS="\t"} {
     end = $3
     score = $4
     strand = $5
-
-    print chrom, start, start+1, "U", score, strand
-    print chrom, end-1, end, "D", score, strand
-
-}' ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed > ./data/sample_temp/${SAMPLE_ID}_frag_ends_U_D.bed
-bedtools intersect -a ./data/sample_temp/${SAMPLE_ID}_frag_ends_U_D.bed -b ./data/processing/openchrom_with_id.bed -wa -wb \
+    if (strand == "+") {
+        print chrom, start, start+1, "U", score, strand
+        print chrom, end-1, end, "D", score, strand
+    } else if (strand == "-") {
+        print chrom, start, start+1, "D", score, strand
+        print chrom, end-1, end, "U", score, strand
+    }
+}' ./data/sample_temp/${SAMPLE_ID}_autosomes_chr.bed > ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed
+bedtools intersect -a ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed -b ./data/processing/openchrom_with_id.bed -wa -wb \
     > ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
 
 
@@ -77,7 +80,7 @@ NR==FNR {
    ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed \
 > ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
 
-python ./scripts/current/sample_features_script.py \
+python ./scripts/current/sample_features_script_edm_temp.py \
   $SAMPLE_ID \
   ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed \
   ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed \
@@ -89,7 +92,7 @@ if [ $? -eq 0 ]; then
     rm ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
     rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
     rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
-    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_U_D.bed  
+    rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_orientation_adjust.bed  
     rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed         
 else
     echo "job failed"

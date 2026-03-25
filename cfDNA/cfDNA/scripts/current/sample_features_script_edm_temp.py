@@ -674,7 +674,7 @@ if __name__ == "__main__":
         frag_ends_ocf_path,
         hg19_fasta_path,
         rerun=True,
-        rerun_features=['fsr']
+        rerun_features=['edm']
     )
     sample_features.calculate_features()
     # feature_vector_df = sample_features.make_feature_vector()

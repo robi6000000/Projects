@@ -3,7 +3,7 @@ from sklearn.metrics import roc_auc_score
 import pandas as pd
 import os
 
-svm_dir = "./data/matrix/svm_by_feature/"
+svm_dir = "./data/matrix/svm_rbf_data_leak_by_feature/"
 zhou_auc = {
     'length': 0.8741, 'edm': 0.9736, 'fsd': 0.9271,
     'coverage': 0.9638, 'ends': 0.9639, 'ocf': 0.9467,
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     results = []
     for file in os.listdir(svm_dir):
         if file.endswith(".csv"):
-            feature = file.split("_")[1]
+            feature = file.split("_")[3]
             auc = evaluate_results(os.path.join(svm_dir, file))
             zhou = zhou_auc.get(feature, None)
             results.append({'feature': feature, 'auc': auc, 'zhou_auc': zhou})

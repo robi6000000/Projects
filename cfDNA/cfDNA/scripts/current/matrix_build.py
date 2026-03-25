@@ -92,7 +92,12 @@ if __name__ == "__main__":
         feature = sys.argv[1]
         build_feature_matrix(feature)
     else:
-        features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'edm']
+        features = ['length', 
+                    # 'pfe', 'fsr', 'fsd', 'coverage', 
+                    'ends', 
+                    # 'ocf', 
+                    # 'ifs', 'wps', 'edm'
+                    ]
         
         for feature in features:
             try:

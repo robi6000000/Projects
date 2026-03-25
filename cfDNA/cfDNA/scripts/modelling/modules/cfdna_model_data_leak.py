@@ -25,15 +25,22 @@ class CFDNAModel:
         self.gc_correction = gc_correction
         self.gc_content = gc_content
         X = mx.drop(columns=[c for c in self.metadata_cols if c in mx.columns])
-
-        self.processor = MatrixProcessor(X, gc_content)
-        self.pca = pca
+        # standardize
+        X = MatrixProcessor(X, gc_content).standardize()
+        # GC-correct
+        if self.gc_correction:
+            X = self._gc_correct(X)
+        # PCA
+        if pca:
+            pca_model = PCA(n_components=0.95)
+            X = pd.DataFrame(pca_model.fit_transform(X), index=X.index)
         self.matrix = X
         self.sample_ids = X.index.tolist()
         self.features = X.columns.tolist()
         self.kernel = kernel
         
     def _gc_correct(self, X):
+        print(f"GC-correcting {self.feature}")
         if self.feature == 'fsr':
             fsr_short = X[[c for c in X.columns if c.endswith('65-151')]]
             fsr_medium = X[[c for c in X.columns if c.endswith('151-221')]]
@@ -70,17 +77,7 @@ class CFDNAModel:
         for train_i, test_i in skf.split(X, y):
             X_train, X_test = X.iloc[train_i], X.iloc[test_i]
             y_train = y[train_i]
-            processor_train = MatrixProcessor(X_train, self.gc_content)
-            processor_test = MatrixProcessor(X_test, self.gc_content)
-            X_train = processor_train.standardize()
-            X_test = processor_test.standardize()
-            if self.gc_correction:
-                X_train = self._gc_correct(X_train)
-                X_test = self._gc_correct(X_test)
-            if self.pca:
-                pca = PCA(n_components=0.95)
-                X_train = pca.fit_transform(X_train)
-                X_test = pca.transform(X_test)
+            
             if self.kernel is None:
                 model = svm.SVC(probability=True)
             else:
@@ -88,8 +85,6 @@ class CFDNAModel:
             model.fit(X_train, y_train)
             probabilities[test_i] = model.predict_proba(X_test)[:, 1]
         
-        return {
-            'probabilities': probabilities,
-            'sample_ids': self.sample_ids,
-            'labels': y
-        }
+        return {'probabilities': probabilities, 
+                'sample_ids': self.sample_ids, 
+                'labels': y}
