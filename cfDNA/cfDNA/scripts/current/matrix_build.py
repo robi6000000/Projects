@@ -8,18 +8,19 @@ features_folder = "./data/cristiano_features"
 matrix_folder = "./data/matrix/by_feature"
 manifest_path = "./data/manifest/Cristiano_manifest.csv"
 
-os.makedirs(matrix_folder, exist_ok=True)
 
-def build_feature_matrix(feature_name):
+def build_feature_matrix(feature_name, mapq_filter=None):
     """
     Build feature matrix for a single fragmentation pattern.
     """
     
     feature_dir = f"{features_folder}/{feature_name}"
+    if mapq_filter is not None:
+        feature_dir = f"{features_folder}/{feature_name}_mapq{mapq_filter}"
     
     print(f"Building matrix for: {feature_name}")
     
-    # Get all sample files
+    # get all sample files in the given folder
     feature_files = sorted(glob.glob(f"{feature_dir}/*.csv"))
     print(f"Found {len(feature_files)} files")
     
@@ -27,7 +28,7 @@ def build_feature_matrix(feature_name):
         print(f"No files - {feature_name}")
         return
     
-    # Load first file to get structure
+    # load first file to get structure (matrix vs vector feature)
     first_file = feature_files[0]
     
     df = pd.read_csv(first_file, index_col=0)
@@ -38,6 +39,7 @@ def build_feature_matrix(feature_name):
         column_names = []
         for row in df.index:
             for col_name in df.columns:
+                # fixing inconsistent colnames having spaces 
                 clean_col = str(col_name).replace(' ', '')
                 column_names.append(f"{feature_name}_{row}_bin_{clean_col}")
     
@@ -80,7 +82,14 @@ def build_feature_matrix(feature_name):
     matrix = matrix[metadata_cols + feature_cols]
     
     # Save
-    output_path = f"{matrix_folder}/matrix_{feature_name}.csv"
+    print('mapq_filter:', mapq_filter)
+    output_folder = matrix_folder
+    if mapq_filter is not None:
+
+        output_folder = f"{matrix_folder}_mapq{mapq_filter}"
+
+    os.makedirs(output_folder, exist_ok=True)
+    output_path = f"{output_folder}/matrix_{feature_name}.csv"
     print(f"Saving to {output_path}")
     matrix.to_csv(output_path, index=False)
     print(f"Saved: {matrix.shape}")
@@ -88,22 +97,28 @@ def build_feature_matrix(feature_name):
 
 if __name__ == "__main__":    
     if len(sys.argv) > 1:
-        # Run specific feature from command line
+        # run a specific feature using given maptq filtering threshold
         feature = sys.argv[1]
+        mapq_filter = sys.argv[2] if len(sys.argv) > 2 else "none"
+        if mapq_filter != "none":
+            feature = f"{feature}_mapq{mapq_filter}"
         build_feature_matrix(feature)
     else:
         features = ['length', 
-                    # 'pfe', 'fsr', 'fsd', 'coverage', 
+                    'pfe', 'fsr', 'fsd', 'coverage', 
                     'ends', 
-                    # 'ocf', 
-                    # 'ifs', 'wps', 'edm'
+                    'ocf', 
+                    'ifs', 'wps_compute', 'edm', 
+                    'poem_prem', 'ext_poem_prem'
                     ]
+        mapq_filters = [30, 20, 10, None]
         
         for feature in features:
-            try:
-                build_feature_matrix(feature)
-            except Exception as e:
-                print(f"Error building {feature}: {e}")
-                continue
+            for mapq_filter in mapq_filters:
+                try:
+                    build_feature_matrix(f"{feature}_mapq{mapq_filter}" if mapq_filter else feature)
+                except Exception as e:
+                    print(f"Error building {feature} with MAPQ filter {mapq_filter}: {e}")
+                    continue
         
         print("Finished all features")

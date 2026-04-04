@@ -7,3 +7,14 @@ cfDNA/logs/
 /cfDNA/supplementary/
 /cfDNA/fastq/
 /cfDNA/bam/
+/cfDNA/frag/
+/cfDNA/cfDNA/.snakemake/
+/cfDNA/cfDNA/trimmomatic/
+/cfDNA/cfDNA/cutadapt/
+/cfDNA/cfDNA/fastqc/
+/cfDNA/cfDNA/fastqc_trim/
+/cfDNA/cfDNA/fastq/
+/cfDNA/cfDNA/temp/
+/cfDNA/cfDNA/local_tmp/
+/cfDNA/cfDNA/bam/
+/cfDNA/cfDNA/frag/

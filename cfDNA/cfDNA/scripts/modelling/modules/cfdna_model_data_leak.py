@@ -12,27 +12,31 @@ from modules.matrix_processor import MatrixProcessor
 
 class CFDNAModel:
     metadata_cols = ['seqrun_id','sample_name', 'stage', 'disease', 'tissue']
-    gc_correct_features = ['pfe', 'fsr', 'coverage', 'ends', 'ocf', 'ifs','wps']
+    gc_correct_features = ['pfe', 'coverage', 'ends', 'ocf', 'ifs','wps']
 
     def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame,  
                  feature: str = None, kernel: str = None, gc_correction: bool = False,
-                 pca: bool = False):
+                 pca: bool = False, pca_components: float = 0.95, cv_repeats: int = 10):
 
         metadata_mx = mx[self.metadata_cols]
         metadata_mx['cancer_true'] = metadata_mx['disease'].apply(lambda x: 0 if x == 'Healthy' else 1)
         self.labels = metadata_mx['cancer_true'].values
         self.feature = feature
         self.gc_correction = gc_correction
+        self.cv_repeats = cv_repeats
+        print(f" Feature: {feature}, GC correction: {gc_correction}, PCA: {pca}, Kernel: {kernel}")
         self.gc_content = gc_content
         X = mx.drop(columns=[c for c in self.metadata_cols if c in mx.columns])
         # standardize
         X = MatrixProcessor(X, gc_content).standardize()
         # GC-correct
-        if self.gc_correction:
+        if self.gc_correction and self.feature in self.gc_correct_features:
+            print(f"Applying gccorrection")
             X = self._gc_correct(X)
+        X = X.replace([np.inf, -np.inf], np.nan).fillna(0)
         # PCA
         if pca:
-            pca_model = PCA(n_components=0.95)
+            pca_model = PCA(n_components=pca_components)
             X = pd.DataFrame(pca_model.fit_transform(X), index=X.index)
         self.matrix = X
         self.sample_ids = X.index.tolist()
@@ -41,24 +45,10 @@ class CFDNAModel:
         
     def _gc_correct(self, X):
         print(f"GC-correcting {self.feature}")
-        if self.feature == 'fsr':
-            fsr_short = X[[c for c in X.columns if c.endswith('65-151')]]
-            fsr_medium = X[[c for c in X.columns if c.endswith('151-221')]]
-            fsr_long = X[[c for c in X.columns if c.endswith('221-400')]]
-
-            region_ids = range(fsr_short.shape[1])
-            gc_aligned = self.gc_content.loc[region_ids].reset_index(drop=True)
-
-            corrected_short = MatrixProcessor(fsr_short, gc_aligned).GC_correction()
-            corrected_medium = MatrixProcessor(fsr_medium, gc_aligned).GC_correction()
-            corrected_long = MatrixProcessor(fsr_long, gc_aligned).GC_correction()
-
-            X = pd.concat([corrected_short, corrected_medium, corrected_long], axis=1)
-        else:
-            region_ids = range(X.shape[1])
-            gc_aligned = self.gc_content.loc[region_ids].reset_index(drop=True)
-            processor2 = MatrixProcessor(X, gc_aligned)
-            X = processor2.GC_correction()
+        region_ids = range(X.shape[1])
+        gc_aligned = self.gc_content.loc[region_ids].reset_index(drop=True)
+        processor = MatrixProcessor(X, gc_aligned)
+        X = processor.GC_correction()
         return X
     
     def split(self, test_size=0.2, random_state=1):
@@ -66,15 +56,16 @@ class CFDNAModel:
     
     def train_svm(self):
         """
-        Trains an SVM model using 10-fold stratified kfold cross validation.
-        Returns predicted probabilities for the training set.
+        Trains an SVM model using 10x10 repeated stratified cross validation.
+        Returns one averaged out-of-fold probability per sample.
         """
         X = self.matrix
         y = self.labels
-        skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-        probabilities = np.full(len(y), np.nan)
+        rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=self.cv_repeats, random_state=1)
+        prob_sum = np.zeros(len(y), dtype=float)
+        prob_count = np.zeros(len(y), dtype=int)
         
-        for train_i, test_i in skf.split(X, y):
+        for train_i, test_i in rskf.split(X, y):
             X_train, X_test = X.iloc[train_i], X.iloc[test_i]
             y_train = y[train_i]
             
@@ -83,7 +74,16 @@ class CFDNAModel:
             else:
                 model = svm.SVC(probability=True, kernel=self.kernel)
             model.fit(X_train, y_train)
-            probabilities[test_i] = model.predict_proba(X_test)[:, 1]
+            fold_probs = model.predict_proba(X_test)[:, 1]
+            prob_sum[test_i] += fold_probs
+            prob_count[test_i] += 1
+
+        probabilities = np.divide(
+            prob_sum,
+            prob_count,
+            out=np.full(len(y), np.nan, dtype=float),
+            where=prob_count > 0,
+        )
         
         return {'probabilities': probabilities, 
                 'sample_ids': self.sample_ids, 

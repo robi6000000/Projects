@@ -12,11 +12,11 @@ from modules.matrix_processor import MatrixProcessor
 
 class CFDNAModel:
     metadata_cols = ['seqrun_id','sample_name', 'stage', 'disease', 'tissue']
-    gc_correct_features = ['pfe', 'fsr', 'coverage', 'ends', 'ocf', 'ifs','wps']
+    gc_correct_features = ['pfe', 'coverage', 'ends', 'ocf', 'ifs','wps']
 
     def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame,  
                  feature: str = None, kernel: str = None, gc_correction: bool = False,
-                 pca: bool = False):
+                 pca: bool = False, pca_components: float = 0.95, cv_repeats: int = 10):
 
         metadata_mx = mx[self.metadata_cols]
         metadata_mx['cancer_true'] = metadata_mx['disease'].apply(lambda x: 0 if x == 'Healthy' else 1)
@@ -28,11 +28,12 @@ class CFDNAModel:
 
         self.processor = MatrixProcessor(X, gc_content)
         self.pca = pca
+        self.pca_components = pca_components
         self.matrix = X
         self.sample_ids = X.index.tolist()
         self.features = X.columns.tolist()
         self.kernel = kernel
-        
+        self.cv_repeats = cv_repeats
     def _gc_correct(self, X):
         if self.feature == 'fsr':
             fsr_short = X[[c for c in X.columns if c.endswith('65-151')]]
@@ -59,34 +60,46 @@ class CFDNAModel:
     
     def train_svm(self):
         """
-        Trains an SVM model using 10-fold stratified kfold cross validation.
-        Returns predicted probabilities for the training set.
+        Trains an SVM model using 10x10 repeated stratified cross validation.
+        Returns one averaged out-of-fold probability per sample.
         """
         X = self.matrix
         y = self.labels
-        skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-        probabilities = np.full(len(y), np.nan)
+        rskf = RepeatedStratifiedKFold(n_splits=10, n_repeats=self.cv_repeats, random_state=1)
+        prob_sum = np.zeros(len(y), dtype=float)
+        prob_count = np.zeros(len(y), dtype=int)
         
-        for train_i, test_i in skf.split(X, y):
+        for train_i, test_i in rskf.split(X, y):
             X_train, X_test = X.iloc[train_i], X.iloc[test_i]
             y_train = y[train_i]
             processor_train = MatrixProcessor(X_train, self.gc_content)
             processor_test = MatrixProcessor(X_test, self.gc_content)
-            X_train = processor_train.standardize()
-            X_test = processor_test.standardize()
+            X_train_scaled = processor_train.standardize()
+            X_test_scaled = processor_test.standardize(X_train)
             if self.gc_correction:
-                X_train = self._gc_correct(X_train)
-                X_test = self._gc_correct(X_test)
+                X_train_scaled = self._gc_correct(X_train_scaled)
+                X_test_scaled = self._gc_correct(X_test_scaled)
+            X_train_scaled = X_train_scaled.replace([np.inf, -np.inf], np.nan).fillna(0)
+            X_test_scaled = X_test_scaled.replace([np.inf, -np.inf], np.nan).fillna(0)
             if self.pca:
-                pca = PCA(n_components=0.95)
-                X_train = pca.fit_transform(X_train)
-                X_test = pca.transform(X_test)
+                pca = PCA(n_components=self.pca_components)
+                X_train_scaled = pca.fit_transform(X_train_scaled)
+                X_test_scaled = pca.transform(X_test_scaled)
             if self.kernel is None:
                 model = svm.SVC(probability=True)
             else:
                 model = svm.SVC(probability=True, kernel=self.kernel)
-            model.fit(X_train, y_train)
-            probabilities[test_i] = model.predict_proba(X_test)[:, 1]
+            model.fit(X_train_scaled, y_train)
+            fold_probs = model.predict_proba(X_test_scaled)[:, 1]
+            prob_sum[test_i] += fold_probs
+            prob_count[test_i] += 1
+
+        probabilities = np.divide(
+            prob_sum,
+            prob_count,
+            out=np.full(len(y), np.nan, dtype=float),
+            where=prob_count > 0,
+        )
         
         return {
             'probabilities': probabilities,

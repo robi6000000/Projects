@@ -49,7 +49,9 @@ fi
   sort -k1,1V -k2,2n | \
   bedtools merge | \
   awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' | \
-  awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); s=c-100; if(s<0)s=0; e=c+100; print $1,s,e}' | \
+#   compute centroid and get 200bp regions
+  awk 'BEGIN{OFS="\t"} {c=int(($2+$3)/2); start=c-100; if(start<0)start=0; end=c+100; print $1,start,end}' | \
+#   add region ids, $0 means the whole line, NR is the line number
   awk 'BEGIN{OFS="\t"} {print $0, NR-1}' \
   > ./data/processing/openchrom_with_id.bed 
 
@@ -81,6 +83,19 @@ awk 'BEGIN{OFS="\t"} {
     print $1, $2, $3, c, $4
 }' ./data/processing/openchrom_with_id.bed \
 > ./data/processing/openchrom_with_id_centroid.bed
+
+# extend openchrom regions by 60bp on each side for WPS computation
+awk 'BEGIN{OFS="\t"} {
+    chrom = $1
+    start = $2
+    end = $3
+    region_id = $4
+
+    wps_start = start - 60
+    if (wps_start < 0) wps_start = 0
+    wps_end = end + 60
+    print chrom, wps_start, wps_end, region_id
+}' ./data/processing/openchrom_with_id.bed > ./data/processing/wps_openchrom_with_id.bed
 
 # get reference genome fasta for end motif:
 if [ ! -f "./data/hg19/hg19.fa.gz" ]; then

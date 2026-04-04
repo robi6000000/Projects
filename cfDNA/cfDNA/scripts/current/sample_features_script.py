@@ -21,17 +21,21 @@ pd.set_option('display.max_rows', None)
 
 class SampleFeatures:
     def __init__(self, sample_id, openchrom_path, frag_centroids_openchrom_intersect_path, 
-                 frag_ends_openchrom_intersect_path, frag_ends_ocf_path, hg19_fasta_path, rerun=False, rerun_features: list = None):
+                 frag_ends_openchrom_intersect_path, frag_ends_ocf_path, frag_wps_intersect_path, hg19_fasta_path,
+                 rerun=False, rerun_features: list = None, mapq_filter: int = None, mapq_filter_features: list = None):
         
         self.sample_id = sample_id
         self.openchrom_path = openchrom_path
         self.frag_centroids_openchrom_intersect_path = frag_centroids_openchrom_intersect_path
         self.frag_ends_openchrom_intersect_path = frag_ends_openchrom_intersect_path
         self.frag_ends_ocf_path = frag_ends_ocf_path
+        self.frag_wps_intersect_path = frag_wps_intersect_path
         self.hg19_fasta_path = hg19_fasta_path
 
         self.rerun = rerun
         self.rerun_features = rerun_features
+        self.mapq_filter = mapq_filter
+        self.mapq_filter_features = mapq_filter_features
         
         self.load()
         print("Number of unique region IDs:", self.df_region_ids.shape[0])
@@ -39,19 +43,39 @@ class SampleFeatures:
         print("frag_ends_openchrom_intersect.shape:", self.frag_ends_openchrom_intersect.shape)
         print("frag_ends_ocf.shape:", self.frag_ends_ocf.shape)
 
-    def _use_saved_file(self, filename, feature_name):
+    def _use_saved_file(self, filename, featurename):
         if os.path.exists(filename):
             if not self.rerun:
                 return True
             elif self.rerun_features is None:
                 return False
-            elif feature_name in self.rerun_features:
-                print(f'recomputing {feature_name}')
+            elif featurename.split('_')[0] in self.rerun_features:
+                print(f'recomputing {featurename}')
                 return False
             else:
                 return True
-            
-    
+        else:
+            return False
+
+    def _use_mapq_filter(self, feature_name):
+        """
+        Helper to check whether to use mapq filter for a given feature based on user input.
+        """
+        if self.mapq_filter is None:
+            return False
+        elif self.mapq_filter_features is None:
+            return True
+        else:
+            return feature_name in self.mapq_filter_features
+
+    def _filtered(self, df, feature_name):
+        """
+        Filter df by set mapq score
+        """
+        if self._use_mapq_filter(feature_name):
+            return df[df['score'] >= self.mapq_filter].copy()
+        return df
+
     def load(self):
         self.openchrom_with_id = pd.read_csv(
             self.openchrom_path,
@@ -64,19 +88,27 @@ class SampleFeatures:
             self.frag_centroids_openchrom_intersect_path,
             sep="\t",
             header=None,
-            names=["f_chrom", "centroid1", "centroid2", "f_start", "f_end", "score", "strand", "oc_chrom", "oc_start", "oc_end", "region_id"])
+            names=["f_chrom", "centroid1", "centroid2", "f_start", "f_end", "score", "strand", "frag_id", "oc_chrom", "oc_start", "oc_end", "region_id"])
 
         self.frag_ends_openchrom_intersect = pd.read_csv(
             self.frag_ends_openchrom_intersect_path,
             sep="\t",
             header=None,
-            names=["f_chrom", "end1", "end2", "end_type", "oc_chrom", "oc_start", "oc_end", "region_id"])
+            names=["f_chrom", "end1", "end2", "end_type", "score", "strand", "frag_id", "oc_chrom", "oc_start", "oc_end", "region_id"])
 
         self.frag_ends_ocf = pd.read_csv(
             self.frag_ends_ocf_path,
             sep="\t",
             header=None,
-            names=["chrom", "end1", "end2", "end_type", "oc_start", "oc_end", "region_id", "centroid", "rel_pos"]
+            names=["chrom", "end1", "end2", "end_type", "score", "strand", "frag_id", 
+                "oc_start", "oc_end", "region_id", "centroid", "rel_pos"]
+        )
+
+        self.frag_wps_openchrom_intersect = pd.read_csv(
+            self.frag_wps_intersect_path,
+            sep="\t",
+            header=None,
+            names=["f_chrom", "f_start", "f_end", "score", "strand", "frag_id","oc_chrom", "oc_start", "oc_end", "region_id"]
         )
 
         self.hg19_fasta = Fasta(self.hg19_fasta_path)
@@ -85,14 +117,19 @@ class SampleFeatures:
             self.frag_centroids_openchrom_intersect["f_end"] - 
             self.frag_centroids_openchrom_intersect["f_start"]
         )
+        self.frag_wps_openchrom_intersect["length"] = (
+            self.frag_wps_openchrom_intersect["f_end"] - 
+            self.frag_wps_openchrom_intersect["f_start"]
+        )
 
         # check if folders exist for each sample in cristiano_features
-        feature_folders = [
-            'length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'edm'
-        ]
-        for folder in feature_folders:
-            if not os.path.exists(f'./data/cristiano_features/{folder}'):
-                os.makedirs(f'./data/cristiano_features/{folder}')
+        base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'wps_compute', 'edm', 'poem', 'prem', 'poem_prem', 'ext_poem_prem']
+        folders_to_create = list(base_features)
+        if self.mapq_filter is not None:
+            mapq_features = self.mapq_filter_features if self.mapq_filter_features is not None else base_features
+            folders_to_create += [f'{f}_mapq{self.mapq_filter}' for f in mapq_features]
+        for folder in folders_to_create:
+            os.makedirs(f'./data/cristiano_features/{folder}', exist_ok=True)
 
     def calculate_features(self):
         try:
@@ -145,102 +182,60 @@ class SampleFeatures:
         except Exception as e:
             print(f"Error calculating edm: {e}")
             self.edm = None
+        try:
+            self.poem_prem = self.get_poem_prem()
+        except Exception as e:
+            print(f"Error calculating poem_prem: {e}")
+            self.poem_prem = None
+        try:
+            self.ext_poem_prem = self.get_ext_poem_prem()
+        except Exception as e:
+            print(f"Error calculating ext_poem_prem: {e}")
+            self.ext_poem_prem = None
+        try:
+            self.poem = self.get_poem()
+        except Exception as e:
+            print(f"Error calculating poem: {e}")
+            self.poem = None
+        try:
+            self.prem = self.get_prem()
+        except Exception as e:
+            print(f"Error calculating prem: {e}")
+            self.prem = None
+        try:
+            self.wps_compute = self.get_wps_compute()
+        except Exception as e:
+            print(f"Error calculating wps_compute: {e}")
+            self.wps_compute = None
 
-
-    # TODO old
-    def make_feature_vector(self):
-        self.calculate_features()
-        # vector features: df_pfe, df_cov, df_end, df_ocf, df_ifs
-        # merge vecotr features on region_id and flatten
-        # matrix features: df_length, df_fsr, df_fsd, df_edm
-        region_index = self.df_region_ids["region_id"].values
-
-        # (df, value_column, feature_prefix)
-        vec_features = []
-        if self.pfe is not None:
-            vec_features.append((self.pfe, "pfe", "pfe"))
-        if self.coverage is not None:
-            vec_features.append((self.coverage, "coverage", "cov"))
-        if self.ends is not None:
-            vec_features.append((self.ends, "end", "end"))
-        if self.ocf is not None:
-            vec_features.append((self.ocf, "ocf", "ocf"))
-        if self.ifs is not None:
-            vec_features.append((self.ifs, "IFS", "ifs"))
-        if self.wps is not None:
-            vec_features.append((self.wps, "wps", "wps"))
-        
-        mx_features = []
-        if self.length is not None:
-            mx_features.append((self.length, None, "len"))
-        if self.fsr is not None:
-            mx_features.append((self.fsr, None, "fsr"))
-        if self.fsd is not None:
-            mx_features.append((self.fsd, None, "fsd"))
-        if self.edm is not None:
-            mx_features.append((self.edm, None, "edm"))
-
-        if len(vec_features) == 0 and len(mx_features) == 0:
-            print("error: features failed to compute")
-            return None
-
-
-        feature_vectors = []
-        feature_names = []
-
-        for df, col, prefix in vec_features:
-            vec = df.loc[region_index, col].to_numpy()
-            feature_vectors.append(vec)
-
-            feature_names.extend(
-                [f"{prefix}_region_{rid}" for rid in df.index]
-            )
-        # have to double index matrix features
-        for mx, col, prefix in mx_features:
-            # print(prefix, mx.shape)
-            for chrom in mx.index:
-                row = mx.loc[chrom]
-                vec = row.to_numpy()
-                feature_vectors.append(vec)
-                # print(f"  {chrom} vec shape: {vec.shape}")
-                feature_names.extend(
-                    [f"{prefix}_{chrom}_bin_{b}" for b in row.index]
-                )
-
-        # final 1D feature vector
-        feature_vector = np.concatenate(feature_vectors)
-        feature_vector_df = pd.DataFrame([feature_vector], columns=feature_names)
-        feature_vector_df.insert(0, "sample_id", self.sample_id)
-
-        print("Feature vector shape:", feature_vector_df.shape)
-        return feature_vector_df
 
     def get_length(self):
         # check if length already exists in feature folder (for given sample)
-        filename = f"./data/cristiano_features/length/{self.sample_id}_length.csv"
-
-        if self._use_saved_file(filename, 'length'):
+        featurename = "length"
+        if self._use_mapq_filter("length"):
+            featurename = f"length_mapq{self.mapq_filter}"
+        filepath = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filepath, featurename):
             print(f"file already exists {self.sample_id}")
-            df = pd.read_csv(filename, index_col=0)
+            df = pd.read_csv(filepath, index_col=0)
             return df
-        
 
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "length")
         # create 33 bins 
         bin_edges = list(range(0, 310, 10)) + [np.inf]
         bin_labels = [f"{i}-{i+10}" for i in range(0, 300, 10)] + [">=300"]
 
-
         # get length column, cut into bins
-        self.frag_centroids_openchrom_intersect["len_bin"] = pd.cut(
-            self.frag_centroids_openchrom_intersect["length"], 
+        frags["len_bin"] = pd.cut(
+            frags["length"], 
             bins=bin_edges, 
             labels=bin_labels, 
             right=False,
             include_lowest=True)
         
-        all_bins = self.frag_centroids_openchrom_intersect["len_bin"].cat.categories
+        all_bins = frags["len_bin"].cat.categories
         # group by chromosome and get proporotions
-        length_matrix = (self.frag_centroids_openchrom_intersect
+        length_matrix = (frags
                     .groupby(["f_chrom", "len_bin"])
                     .size()
                     .unstack(fill_value=0))
@@ -249,16 +244,20 @@ class SampleFeatures:
         chrom_order = [f"chr{i}" for i in range(1, 23)]
         df_length = length_matrix.reindex(chrom_order, fill_value=0)
         print("df_length:", df_length.shape)
-        df_length.to_csv(filename)      # save to feature folder
+        df_length.to_csv(filepath)      # save to feature folder
         return df_length
     
     def get_pfe(self):
-        filename = f"./data/cristiano_features/pfe/{self.sample_id}_pfe.csv"
-        if self._use_saved_file(filename, 'pfe'):
+        featurename = "pfe"
+        if self._use_mapq_filter("pfe"):
+            featurename = f"pfe_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
-        
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "pfe")
         bins_pfe = ([0, 100] +
                     list(range(100, 260, 10)) +
                     [np.inf])
@@ -267,16 +266,16 @@ class SampleFeatures:
         bin_labels_pfe = [f"{bins_pfe[i]}-{bins_pfe[i+1]}" for i in range(len(bins_pfe)-1)]
 
         # cut into categories
-        self.frag_centroids_openchrom_intersect["pfe_bin"] = pd.cut(
-                self.frag_centroids_openchrom_intersect["length"],
+        frags["pfe_bin"] = pd.cut(
+            frags["length"],
                 bins=bins_pfe,
                 labels=bin_labels_pfe,
                 right=False,
                 include_lowest=True)
 
         # calculate P_i
-        counts = (self.frag_centroids_openchrom_intersect
-                .groupby(["region_id", "pfe_bin"])
+        counts = (frags
+            .groupby(["region_id", "pfe_bin"])
                 .size()
                 .unstack(fill_value=0))
 
@@ -296,25 +295,29 @@ class SampleFeatures:
         return df_pfe
     
     def get_fsr(self):
-        filename = f"./data/cristiano_features/fsr/{self.sample_id}_fsr.csv"
-        if self._use_saved_file(filename, 'fsr'):
+        featurename = 'fsr'
+        if self._use_mapq_filter("fsr"):
+            featurename = f"fsr_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
-        
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "fsr")
         # bin edges
-        bins_fsr = [65, 151, 221, 400]
-        bin_labels_fsr = [f"{bins_fsr[i]}-{bins_fsr[i+1]}" for i in range(len(bins_fsr)-1)]
-        self.frag_centroids_openchrom_intersect["fsr_bin"] = pd.cut(
-            self.frag_centroids_openchrom_intersect["length"],
+        bins_fsr = [64, 150, 220, 400]
+        bin_labels_fsr = ["65-150", "151-220", "221-400"]
+        frags["fsr_bin"] = pd.cut(
+            frags["length"],
             bins=bins_fsr,
             labels=bin_labels_fsr,
-            right=False,
+            right=True,
             include_lowest=True
         )
-        all_bins = self.frag_centroids_openchrom_intersect["fsr_bin"].cat.categories
+        all_bins = frags["fsr_bin"].cat.categories
         # get proportions
-        counts = (self.frag_centroids_openchrom_intersect
+        counts = (frags     
                 .groupby(["region_id", "fsr_bin"])
                 .size()
                 .unstack(fill_value=0))
@@ -328,30 +331,36 @@ class SampleFeatures:
         df_fsr.to_csv(filename)
         return df_fsr
     
+    
+
     def get_fsd(self):
 
-        filename = f"./data/cristiano_features/fsd/{self.sample_id}_fsd.csv"
-        if self._use_saved_file(filename, 'fsd'):
+        featurename = 'fsd'
+        if self._use_mapq_filter("fsd"):
+            featurename = f"fsd_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "fsd")
         # bin 
         bins_fsd = list(range(65, 405, 5)) 
         bin_labels_fsd = [f"{bins_fsd[i]}-{bins_fsd[i+1]}" for i in range(len(bins_fsd)-1)]
 
-        self.frag_centroids_openchrom_intersect["fsd_bin"] = pd.cut(
-            self.frag_centroids_openchrom_intersect["length"],
+        frags["fsd_bin"] = pd.cut(
+            frags["length"],
             labels=bin_labels_fsd,
             bins=bins_fsd,
             right=False,
             include_lowest=True,
-
         )
-        all_bins = self.frag_centroids_openchrom_intersect["fsd_bin"].cat.categories
+        all_bins = frags["fsd_bin"].cat.categories
 
         # proportions
         counts = (
-            self.frag_centroids_openchrom_intersect
+            frags
             .groupby(["f_chrom", "fsd_bin"])
             .size()
             .unstack(fill_value=0)
@@ -369,14 +378,19 @@ class SampleFeatures:
     
     def get_coverage(self):
 
-        filename = f"./data/cristiano_features/coverage/{self.sample_id}_coverage.csv"
-        if self._use_saved_file(filename, 'coverage'):
+        featurename = 'coverage'
+        if self._use_mapq_filter("coverage"):
+            featurename = f"coverage_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "coverage")
         # for coverage we need to merge with the original region id file at the start, since we are just counting occurences
         centroids_intersect = self.df_region_ids.merge(
-            self.frag_centroids_openchrom_intersect,
+            frags,
             on="region_id",
             how="left"
         )
@@ -394,13 +408,18 @@ class SampleFeatures:
     
     def get_ends(self):
 
-        filename = f"./data/cristiano_features/ends/{self.sample_id}_ends.csv"
-        if self._use_saved_file(filename, 'ends'):
+        featurename = 'ends'
+        if self._use_mapq_filter("ends"):
+            featurename = f"ends_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
+
+        ends = self._filtered(self.frag_ends_openchrom_intersect, "ends")
         ends_intersect = self.df_region_ids.merge(
-            self.frag_ends_openchrom_intersect,
+            ends,
             on="region_id",
             how="left"
         )
@@ -414,12 +433,15 @@ class SampleFeatures:
         print("df_end:", df_end.shape)
         df_end.to_csv(filename)
         return df_end
-    
+
     def get_ocf(self):
-        filename = f"./data/cristiano_features/ocf/{self.sample_id}_ocf.csv"
+        featurename = 'ocf'
+        if self._use_mapq_filter("ocf"):
+            featurename = f"ocf_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
         print("calculating ocf")
-        
-        if self._use_saved_file(filename, 'ocf'):
+
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
@@ -427,8 +449,8 @@ class SampleFeatures:
         # set boundaries around peaks
         leftmin, leftmax = -70, -50
         rightmin, rightmax = 50, 70
-        df = self.frag_ends_ocf.copy()
-        
+        df = self._filtered(self.frag_ends_ocf, "ocf")
+
         df["window"] = np.where((df["rel_pos"] >= leftmin) & (df["rel_pos"] < leftmax),
                                 "left",
                                 np.where((df["rel_pos"] >= rightmin) & (df["rel_pos"] < rightmax),
@@ -436,7 +458,7 @@ class SampleFeatures:
                                         None))
 
         df = df[df["window"].notna()]
-        
+
         counts = (df
                 .groupby(["region_id", "window", "end_type"])
                 .size()
@@ -447,10 +469,10 @@ class SampleFeatures:
         counts["right_term"] = (counts.get("U", 0) - counts.get("D", 0))
 
         counts['left_window'] = np.where(
-            counts.index.get_level_values('window') == "left", 
+            counts.index.get_level_values('window') == "left",
             counts["left_term"], 0)
         counts['right_window'] = np.where(
-            counts.index.get_level_values('window') == "right", 
+            counts.index.get_level_values('window') == "right",
             counts["right_term"], 0)
 
         ocf_left = counts.groupby("region_id")["left_window"].sum()
@@ -462,7 +484,7 @@ class SampleFeatures:
         print(ocf.describe())
 
         print(ocf.head(20))
-                
+
         df_ocf = (self.df_region_ids
                 .merge(ocf.rename("ocf"), on="region_id", how="left")
                 .fillna(0))
@@ -472,20 +494,25 @@ class SampleFeatures:
         return df_ocf
     
     def get_ifs(self):
-        filename = f"./data/cristiano_features/ifs/{self.sample_id}_ifs.csv"
-        if self._use_saved_file(filename, 'ifs'):
+        featurename = 'ifs'
+        if self._use_mapq_filter("ifs"):
+            featurename = f"ifs_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "ifs")
         # count fragments (n), calculate average lengths (l),
-        region_counts = self.frag_centroids_openchrom_intersect.groupby("region_id").size()
-        region_avg_length = self.frag_centroids_openchrom_intersect.groupby("region_id")["length"].mean()
+        region_counts = frags.groupby("region_id").size()
+        region_avg_length = frags.groupby("region_id")["length"].mean()
 
         # average length per chromosome (L):
-        chrom_avg_length = self.frag_centroids_openchrom_intersect.groupby("f_chrom")["length"].mean()
+        chrom_avg_length = frags.groupby("f_chrom")["length"].mean()
 
         # add chrom avg to main dataframe
-        self.frag_centroids_openchrom_intersect["chrom_avg"] = self.frag_centroids_openchrom_intersect["f_chrom"].map(chrom_avg_length)
+        frags["chrom_avg"] = frags["f_chrom"].map(chrom_avg_length)
         df_ifs = pd.DataFrame({
             "region_id": region_counts.index,
             "n": region_counts.values,
@@ -493,7 +520,7 @@ class SampleFeatures:
         })
 
         # map chromosome for L
-        region_chrom = self.frag_centroids_openchrom_intersect.groupby("region_id")["f_chrom"].first()
+        region_chrom = frags.groupby("region_id")["f_chrom"].first()
         df_ifs["chrom"] = df_ifs["region_id"].map(region_chrom)
         df_ifs["L"] = df_ifs["chrom"].map(chrom_avg_length)
 
@@ -529,8 +556,11 @@ class SampleFeatures:
         covered (+1), and partially covered (−1), was counted. The mean value of
         all loci within each open chromatin region was calculated.
         """
-        filename = f"./data/cristiano_features/wps/{self.sample_id}_wps.csv"
-        if self._use_saved_file(filename, 'wps'):
+        featurename = "wps"
+        if self._use_mapq_filter("wps"):
+            featurename = f"wps_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
             return df
@@ -557,6 +587,72 @@ class SampleFeatures:
         df_wps.to_csv(filename)
         return df_wps
 
+    def get_wps_compute(self):
+        """
+        compute wps from fragment ends instead of bigwig file
+        uses frag_wps_openchrom_intersect.
+        """
+        featurename = "wps_compute"
+        if self._use_mapq_filter("wps_compute"):
+            featurename = f"wps_compute_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+        
+        half_window = 60
+        wps_means = []
+
+        wps_frags = self._filtered(self.frag_wps_openchrom_intersect, "wps_compute")
+        filtered_frags = wps_frags[
+            (wps_frags['length'] >= 120) &
+            (wps_frags['length'] <= 180)
+        ]
+        frags_in_region = {}
+        for region_id, group in filtered_frags.groupby('region_id'):
+            starts = group['f_start'].values  
+            ends = group['f_end'].values     
+            frags_in_region[region_id] = (starts, ends)
+
+        for idx, row in self.openchrom_with_id.iterrows():
+            if idx % 50000 == 0:
+                print(f"Processing reggion {idx}/561414")
+            chrom = row['oc_chrom']
+            start = row['oc_start']
+            end = row['oc_end']
+            region_id = row['region_id']
+
+            if region_id not in frags_in_region:
+                wps_means.append((region_id, 0.0))
+                continue
+            
+            f_starts = frags_in_region[region_id][0]
+            f_ends = frags_in_region[region_id][1]
+            wps_scores_region = []
+
+            for pos in range(start, end):
+                window_start = pos - half_window
+                window_end = pos + half_window
+
+                starts_in_window = (f_starts >= window_start) & (f_starts < window_end)
+                ends_in_window = (f_ends > window_start) & (f_ends <= window_end)
+                fragments_ending = np.sum(starts_in_window | ends_in_window)
+                fragments_spanning = np.sum((f_starts < window_start) & (f_ends > window_end))
+
+                wps_scores_region.append(fragments_spanning - fragments_ending)
+            
+            mean_wps = np.mean(wps_scores_region) if wps_scores_region else 0.0
+            wps_means.append((region_id, mean_wps))
+
+        df_wps = pd.DataFrame(wps_means, columns=["region_id", "wps_compute"])
+        df_wps = self.df_region_ids.merge(df_wps, on="region_id", how="left").set_index('region_id')
+        df_wps["wps_compute"] = df_wps["wps_compute"].fillna(0)
+        
+        print("df_wps_compute:", df_wps.shape)
+        df_wps.to_csv(filename)
+        return df_wps
+        
     def _reverse_complement(self, seq):
         """
         Takes non-reversed end sequence of the 3' downstream end as input.
@@ -570,58 +666,87 @@ class SampleFeatures:
         return res[::-1]
         
 
-    def _get_edm_motif(self, df, is_start_end, k=4):
+    def _get_motif(self, df, offset=0, k=4, rev_complement=False):
         """
-        Helper function to get 4 base motif at 5' U or 3' D end position.
-        df input is a groupby dataframe.
+        Extract a 4-mer end motif at window given the startin gcoordinate [pos+offset, pos+offset+k) 
+        df: groupby dataframe
+        rev_complement: reverse complement the extracted sequence
+
+        Offset/rc reference for k=4:
+          edm D:      offset=0,   rev_complement=False,  [pos,   pos+4)   
+          edm U:      offset=-4,  rev_complement=True,   [pos-4, pos)    
+          poem:       offset=+4,  rev_complement=False,  [pos+4, pos+8)   
+          prem:       offset=-8,  rev_complement=True,   [pos-8, pos-4)   
+          ext prem:   offset=-4,  rev_complement=False,   [pos-4, pos)     
+          ext poem:   offset=0,   rev_complement=True,  [pos,   pos+4)   
         """
-        chrom = df.name  
-        
+        chrom = df.name
         if chrom not in self.hg19_fasta:
             return pd.Series([None] * len(df), index=df.index)
-        
+
         seq = self.hg19_fasta[chrom]
         motifs = []
-        
+
         for pos in df['pos'].values:
-            if is_start_end == True:
-                start = pos
-                end = pos + k
-            else:
-                start = pos - k
-                end = pos
+            start = pos + offset
+            end = start + k
             try:
                 motif_seq = str(seq[start:end].seq).upper()
-                if is_start_end == False:
+                if rev_complement:
                     motif_seq = self._reverse_complement(motif_seq)
                 motifs.append(motif_seq)
             except Exception as e:
                 print(f'Error: {chrom}, {start}, {end}, {e}')
                 motifs.append(None)
-        
+
         return pd.Series(motifs, index=df.index, name="motif")
 
 
     def get_edm(self):
-        filename = f"./data/cristiano_features/edm/{self.sample_id}_edm.csv"
-        if self._use_saved_file(filename, 'edm'):
+        featurename = "edm"
+        if self._use_mapq_filter("edm"):
+            featurename = f"edm_mapq{self.mapq_filter}"
+        filepath = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filepath, featurename):
             print(f"file already exists {self.sample_id}")
-            df = pd.read_csv(filename, index_col=0)
+            df = pd.read_csv(filepath, index_col=0)
             return df
-        
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "edm")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_edm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_edm.to_csv(filepath)
+            return df_edm
         # get end positions
-        ends_start = self.frag_centroids_openchrom_intersect[["f_chrom", "f_start"]].copy()
+        ends_start = frags[["f_chrom", "f_start"]].copy()
         ends_start = ends_start.rename(columns={"f_start": "pos"})
-        ends_end = self.frag_centroids_openchrom_intersect[["f_chrom", "f_end"]].copy()
+        ends_end = frags[["f_chrom", "f_end"]].copy()
         ends_end = ends_end.rename(columns={"f_end": "pos"})
 
         # get motifs at each position
-        # get normal motifs for ends_start and reverse complement motifs for ends_end
-        edm_start = ends_start.groupby("f_chrom").apply(lambda df: self._get_edm_motif(df, is_start_end=True)).reset_index(level=0, drop=True)
-        edm_end = ends_end.groupby("f_chrom").apply(lambda df: self._get_edm_motif(df, is_start_end=False)).reset_index(level=0, drop=True)  
-        # count and convert to proportions
+        edm_start = (
+            ends_start
+            .groupby("f_chrom")
+            .apply(lambda df: self._get_motif(df, offset=0, rev_complement=False))
+            .rename("motif")
+            .reset_index()
+            .drop(columns=["level_1"])
+        )
+        edm_end = (
+            ends_end
+            .groupby("f_chrom")
+            .apply(lambda df: self._get_motif(df, offset=-4, rev_complement=True))
+            .rename("motif")
+            .reset_index()
+            .drop(columns=["level_1"])
+        )
+
+        df_motif = pd.concat([edm_start, edm_end], ignore_index=True)
         motif_counts = (
-            pd.concat([edm_start, edm_end])
+            df_motif
             .groupby(["f_chrom", "motif"])
             .size()
             .unstack(fill_value=0)
@@ -638,46 +763,275 @@ class SampleFeatures:
         df_edm = df_edm.reindex(chrom_order, fill_value=0)
         
         print(f"df_edm: {df_edm.shape}")
-        df_edm.to_csv(filename)
+        df_edm.to_csv(filepath)
         return df_edm
     
-    def get_edm_5(self):
+    def get_poem(self):
         """
-        get edm matrix for 5' end motifs only
+        get post-end 4mer motif, 4 bases after frag_start
         """
-        pass
+        featurename = 'poem'
+        if self._use_mapq_filter("poem"):
+            featurename = f"poem_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
 
-    def get_edm_3(self):
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "poem")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_poem.to_csv(filename)
+            return df_poem
+        # get end positions
+        ends_start = frags[["f_chrom", "f_start"]].copy()
+        ends_start = ends_start.rename(columns={"f_start": "pos"})
+
+        # get motifs 4 bp after the normal downstream edm
+        poem_start = (
+            ends_start
+            .groupby("f_chrom")
+            .apply(lambda df: self._get_motif(df, offset=4, rev_complement=False))
+            .rename("motif")
+            .reset_index()
+            .drop(columns=["level_1"])
+        )
+
+        # count and convert to proportions
+        motif_counts = (
+            poem_start
+            .groupby(["f_chrom", "motif"])
+            .size()
+            .unstack(fill_value=0)
+        )
+        print(f"motif_counts: {motif_counts.shape}")
+        # have to reindex to include all motifs
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
+
+        df_poem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_poem = df_poem.reindex(chrom_order, fill_value=0)
+        
+        print(f"df_poem: {df_poem.shape}")
+        df_poem.to_csv(filename)
+        return df_poem
+
+    def get_prem(self):
         """
-        get edm matrix for 3' end motifs only
+        get pre-end 4mer motif, 4 bases before frag_end, reverse complemented
         """
-        pass
+        featurename = 'prem'
+        if self._use_mapq_filter("prem"):
+            featurename = f"prem_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "prem")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_prem.to_csv(filename)
+            return df_prem
+        # get end positions
+        ends_end = frags[["f_chrom", "f_end"]].copy()
+        ends_end = ends_end.rename(columns={"f_end": "pos"})
+
+        # get motifs 4 bp before the upstream edm, reverse complemented
+        prem_end = (
+            ends_end
+            .groupby("f_chrom")
+            .apply(lambda df: self._get_motif(df, offset=-8, rev_complement=True))
+            .rename("motif")
+            .reset_index()
+            .drop(columns=["level_1"])
+        )
+
+        # count and convert to proportions
+        motif_counts = (
+            prem_end
+            .groupby(["f_chrom", "motif"])
+            .size()
+            .unstack(fill_value=0)
+        )
+        print(f"motif_counts: {motif_counts.shape}")
+
+        # have to reindex to include all motifs
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
+
+        df_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_prem = df_prem.reindex(chrom_order, fill_value=0)
+
+        print(f"df_prem: {df_prem.shape}")
+        df_prem.to_csv(filename)
+        return df_prem
+    
+    def get_poem_prem(self):
+        """
+        get combined poem and prem motif, 4 bases after frag_start and 4 bases before frag_end (reverse complemented)
+        """
+        featurename = 'poem_prem'
+        if self._use_mapq_filter("poem_prem"):
+            featurename = f"poem_prem_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "poem_prem")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_poem.to_csv(filename)
+            return df_poem
+        # get end positions
+        ends_start = frags[["f_chrom", "f_start"]].copy()
+        ends_start = ends_start.rename(columns={"f_start": "pos"})
+        ends_end = frags[["f_chrom", "f_end"]].copy()
+        ends_end = ends_end.rename(columns={"f_end": "pos"})
+
+        # keep same compact style as get_edm: groupby-apply motifs then combine
+        poem = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=4, rev_complement=False)
+        )
+        prem = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-8, rev_complement=True)
+        )
+
+        # count and convert to proportions
+        motif_counts = (
+            pd.concat([poem, prem])
+            .groupby(level=0)
+            .value_counts()
+            .unstack(fill_value=0)
+        )
+        print(f"motif_counts: {motif_counts.shape}")
+        # have to reindex to include all motifs
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
+
+        df_poem_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_poem_prem = df_poem_prem.reindex(chrom_order, fill_value=0)
+        
+        print(f"df_poem_prem: {df_poem_prem.shape}")
+        df_poem_prem.to_csv(filename)
+        return df_poem_prem
+    
+    
+    def get_ext_poem_prem(self):
+        """
+        get combined external pre/post-end motif:
+        - external pre-end: 4 bases before fragment start [f_start-4, f_start), reverse complemented
+        - external post-end: 4 bases after fragment end [f_end, f_end+4), not reverse complemented
+        """
+        featurename = 'ext_poem_prem'
+        if self._use_mapq_filter("ext_poem_prem"):
+            featurename = f"ext_poem_prem_mapq{self.mapq_filter}"
+        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "ext_poem_prem")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_ext_poem_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_ext_poem_prem.to_csv(filename)
+            return df_ext_poem_prem
+        # get end positions
+        ends_start = frags[["f_chrom", "f_start"]].copy()
+        ends_start = ends_start.rename(columns={"f_start": "pos"})
+        ends_end = frags[["f_chrom", "f_end"]].copy()
+        ends_end = ends_end.rename(columns={"f_end": "pos"})
+
+        ext_pre = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-4, rev_complement=False)
+        )
+        ext_post = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=0, rev_complement=True)
+        )
+
+        # count and convert to proportions
+        motif_counts = (
+            pd.concat([ext_pre, ext_post])
+            .groupby(level=0)
+            .value_counts()
+            .unstack(fill_value=0)
+        )
+        print(f"motif_counts: {motif_counts.shape}")
+        # have to reindex to include all motifs
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
+
+        df_ext_poem_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_ext_poem_prem = df_ext_poem_prem.reindex(chrom_order, fill_value=0)
+        
+        print(f"df_ext_poem_prem: {df_ext_poem_prem.shape}")
+        df_ext_poem_prem.to_csv(filename)
+        return df_ext_poem_prem
+    
+
+    
         
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: python sample_features_script.py sample_id frag_centroids_openchrom_intersect_path frag_ends_openchrom_intersect_path frag_ends_ocf_path ")
+    if len(sys.argv) not in [6, 7]:
+        print("use: python sample_features_script.py sample_id frag_centroids_openchrom_intersect_path frag_ends_openchrom_intersect_path frag_ends_ocf_path frag_wps_intersect_path [mapq_filter]")
         sys.exit(1)
+    
     openchrom_path = './data/processing/openchrom_with_id.bed'
     sample_id = sys.argv[1]
     frag_centroids_openchrom_intersect_path = sys.argv[2]
     frag_ends_openchrom_intersect_path = sys.argv[3]
     frag_ends_ocf_path = sys.argv[4]
+    frag_wps_intersect_path = sys.argv[5]
     hg19_fasta_path = './data/hg19/hg19.fa'
-
+    
+    mapq_filter = None
+    if len(sys.argv) == 7:
+        mapq_arg = sys.argv[6].lower()
+        if mapq_arg not in ['none', '']:
+            mapq_filter = int(sys.argv[6])
+    
     sample_features = SampleFeatures(
         sample_id,
         openchrom_path,
         frag_centroids_openchrom_intersect_path,
         frag_ends_openchrom_intersect_path,
         frag_ends_ocf_path,
+        frag_wps_intersect_path,
         hg19_fasta_path,
         rerun=True,
-        rerun_features=['fsr']
+        rerun_features=None,  
+        mapq_filter=mapq_filter,
+        mapq_filter_features=None  # Filter all features
     )
     sample_features.calculate_features()
-    # feature_vector_df = sample_features.make_feature_vector()
-    # data_temp_path = f'./data/rows_sample_temp/{sample_id}_features.csv'
-    # feature_vector_df.to_csv(data_temp_path, index=False)
-    

@@ -6,10 +6,11 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 class MatrixProcessor:
     metadata_cols = ['sample_name', 'stage', 'disease', 'tissue', 'cancer_true']
 
-    def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame):
+    def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame, X_train: pd.DataFrame = None):
         """
         mx: DataFrame containing the feature matrix with samples as rows and region features as columns
         gc_content: DataFrame containing GC content for each region feature
+        X_train: DataFrame containing the training feature matrix for standardization
         """
         
         self.gc_content = gc_content
@@ -17,13 +18,23 @@ class MatrixProcessor:
         self.sample_ids = self.matrix.index.tolist()
         self.features = self.matrix.columns.tolist()
 
-        # self.mean_ = None
-        # self.std_ = None
-        # self.lowess_fitted_ = None
-    
-    def standardize(self):
-        self.matrix = self.matrix.fillna(0)
-        self.matrix = pd.DataFrame(scale(self.matrix), index=self.sample_ids, columns=self.features)
+    def standardize(self, X_train: pd.DataFrame = None):
+        ''' 
+            X_train is given when self.matrix is the test set 
+            - uses train mean and std to standardize test set.
+
+            Otherwise uses preprocessing.scale to standardize the matrix.
+        '''
+        if X_train is not None:
+            self.matrix = self.matrix.replace([np.inf, -np.inf], np.nan).fillna(0)
+            X_train = X_train.replace([np.inf, -np.inf], np.nan).fillna(0)
+            mean = X_train.mean()
+            # fixing division by zero
+            std = X_train.std(ddof=0).replace(0, 1)
+            self.matrix = (self.matrix - mean) / std
+        else:
+            self.matrix = self.matrix.replace([np.inf, -np.inf], np.nan).fillna(0)
+            self.matrix = self.matrix.apply(scale, axis=0)
         return self.matrix
     
     def GC_correction(self):

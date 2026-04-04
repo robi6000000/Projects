@@ -1,3 +1,4 @@
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -6,9 +7,12 @@ from modules.cfdna_model import CFDNAModel
 GC_CORRECT_FEATURES = ['pfe', 'fsr', 'coverage', 'ends', 'ocf', 'ifs', 'wps']
 
 if __name__ == "__main__":
-    if len(sys.argv) != 7:
-        # format of input arguments: matrix_path, gc_content_path, feature_name, kernel, gc_correction (True/False), pca (True/False)
-        print("Incorrect number of arguments.")
+    if len(sys.argv) < 8:
+        print(
+            "Usage: python scripts/modelling/svm_feature.py "
+            "<matrix_path> <gc_path> <feature> <kernel> <gc_correction:true|false> "
+            "<pca:true|false> [pca_components] [cv_repeats] [mapq_filter]"
+        )
         sys.exit(1)
 
     matrix_path = sys.argv[1]
@@ -17,15 +21,19 @@ if __name__ == "__main__":
     kernel = sys.argv[4]
     gc_correction = sys.argv[5].lower() == 'true'
     pca = sys.argv[6].lower() == 'true'
+    pca_components = float(sys.argv[7]) if len(sys.argv) >= 8 else 0.95
+    cv_repeats = int(sys.argv[8]) if len(sys.argv) >= 9 else 10
+    mapq_filter = sys.argv[9] if len(sys.argv) == 10 else 'None'
 
+    print(f"Config: feature={feature}, kernel={kernel}, gc_correction={gc_correction}, pca={pca}, pca_components={pca_components}, cv_repeats={cv_repeats}, mapq_filter={mapq_filter}")
 
     print(f"Loading matrix for {feature}")
     mx = pd.read_csv(matrix_path, index_col=0, low_memory=False)
     gc_content = pd.read_csv(gc_path)
 
-    gc_correction = feature in GC_CORRECT_FEATURES
     model = CFDNAModel(mx, gc_content, feature=feature,
-                       kernel=kernel, gc_correction=gc_correction, pca=pca)
+                       kernel=kernel, gc_correction=gc_correction, 
+                       pca=pca, pca_components=pca_components, cv_repeats=cv_repeats)
 
     print(f"Training SVM for {feature}")
     results = model.train_svm()
@@ -42,7 +50,21 @@ if __name__ == "__main__":
             output[col] = mx[col].values
     output = output[['sample_id'] + metadata_cols + ['label', 'probability']]
 
-    # out_path = f"./data/matrix/svm_by_feature/svm_{feature}_probs.csv"
-    out_path = f"./data/matrix/svm_linear_by_feature/svm_linear_{feature}_probs.csv"
+    # adjust specific folder name
+    subfolder = f"svm_{kernel}"
+    if pca:
+        subfolder += f"_pca{pca_components}"
+    if gc_correction:
+        subfolder += "_gc"
+    if cv_repeats != 10:
+        subfolder += f"_cv{cv_repeats}"
+    if str(mapq_filter).lower() != 'none':
+        subfolder += f"_mapq{mapq_filter}"
+
+    output_folder = f"./data/matrix/svm_by_feature/{subfolder}"
+    os.makedirs(output_folder, exist_ok=True)
+
+    out_path = f"{output_folder}/{subfolder}_{feature}_probs.csv"
+    
     output.to_csv(out_path, index=False)
-    print(f"probabilities saved {out_path}")
+    print(f"Probabilities saved {out_path}")
