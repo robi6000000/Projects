@@ -1,7 +1,10 @@
 /cfDNA/data/
 /cfDNA/cfDNA/data/
+/cfDNA/cfDNA/log/
 /cfDNA/cfDNA/logs/
 cfDNA/logs/
+/__pycache__/
+*.pyc
 /cfDNA/.snakemake/
 /cfDNA/trimmomatic/
 /cfDNA/supplementary/
@@ -18,3 +21,15 @@ cfDNA/logs/
 /cfDNA/cfDNA/local_tmp/
 /cfDNA/cfDNA/bam/
 /cfDNA/cfDNA/frag/
+cfDNA/log/
+cfDNA/**/__pycache__/
+cfDNA/.snakemake/
+cfDNA/trimmomatic/
+cfDNA/cutadapt/
+cfDNA/fastqc/
+cfDNA/fastqc_trim/
+cfDNA/fastq/
+cfDNA/temp/
+cfDNA/local_tmp/
+cfDNA/bam/
+cfDNA/frag/
