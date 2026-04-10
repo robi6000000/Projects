@@ -38,6 +38,48 @@ keep-going: true'''
 <!-- the slurm finaledb workflow needs fq.gz format so we also need to rename the files -->
 for f in /data/projects/liquid_biopsy/reads/original/gs*.fastq.gz; do
     base=$(basename "$f" .fastq.gz)
-    ln -s "$f" "fastq/${base}.fq.gz"
+    read=$(echo "$base" | grep -o 'R[12]$')
+    sample="${base%_${read}}"
+    if [[ "$sample" == *"_pl" ]]; then
+        ln -s "$f" "fastq/${sample}.${read}.fq.gz"
+    fi
 done
 
+delete frag/ files which are not pl or are not gs_tartget_names.txt:
+find frag/ -type f ! -name "*_pl*" ! -name "gs_target_names.txt" -delete
+
+
+```Considering that feature dimensions of different
+fragmentation patterns vary considerably, we performed a principal
+component analysis dimensionality reduction on all fragmentation
+patterns to the same dimensions before constructing
+the classificationmodel.Model performances before and after dimensionality
+reduction were found to be similar (Table 1).```
+
+sed -i 's|HTTP.remote("https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE-2.fa")|"/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa"|' \
+  finaledb_workflow/slurm/workflow.slurm.smk
+
+snakemake \
+  --profile finaledb_workflow/slurm/profile \
+  -s finaledb_workflow/slurm/workflow.slurm.smk \
+  --reason \
+  frag/gsca_pca_00001_01_01_pl.GRCh37.frag.bed.gz
+
+
+  <!-- generate file with all target names -->
+ls fastq/gs*.R1.fq.gz | while read f; do
+    base=$(basename "$f" .R1.fq.gz)
+    echo "frag/${base}.GRCh37.frag.bed.gz"
+done > frag/gs_target_names.txt
+
+cat frag/gs_target_names.txt | head -5
+wc -l frag/gs_target_names.txt  
+
+<!-- activate screen env -->
+screen -S lynch_preprocess
+
+snakemake \
+  --profile finaledb_workflow/slurm/profile \
+  -s finaledb_workflow/slurm/workflow.slurm.smk \
+  --reason \
+  $(cat frag/ly_target_names.txt)

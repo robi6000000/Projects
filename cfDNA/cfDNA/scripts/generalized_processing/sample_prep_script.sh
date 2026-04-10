@@ -20,13 +20,14 @@ FRAG_WPS_INTERSECT_BED="./data/sample_temp/${SAMPLE_ID}_frag_wps_intersect.bed"
 FRAG_ENDS_WITH_REGION_BED="./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed"
 FRAG_ENDS_OCF_BED="./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed"
 
+# if frag input starts with #, skip those lines (e.g. if there is a header)
+
 # filtering autosomes and adding chr preifx (piped)
 if [[ -s "$AUTOSOMES_BED" ]]; then
     echo "${SAMPLE_ID}_autosomes_chr_id.bed - reusing existing autosome-filtered fragment file"
 else
     zcat "$SAMPLE_FILE" | \
     awk -F"\t" 'BEGIN{OFS="\t"} $1 !~ /^#/ && $1 ~ /^[0-9]+$/ && $1 <= 22 {
-
         chrom=$1
         if (chrom !~ /^chr/) chrom="chr"chrom
         # Handle both BED6 (chrom,start,end,name,mapq,strand) and BED5 (chrom,start,end,mapq,strand).
@@ -164,23 +165,24 @@ else
 fi
 # chrom, end1, end2, end_type, score, strand, frag_id, oc_start, oc_end, region_id, centroid, rel_pos
 
-python -u ./scripts/current/sample_features_script.py \
+python -u ./scripts/generalized_processing/sample_features_script.py \
   $SAMPLE_ID \
   "$CENTROIDS_INTERSECT_BED" \
   "$FRAG_ENDS_INTERSECT_BED" \
   "$FRAG_ENDS_OCF_BED" \
   "$FRAG_WPS_INTERSECT_BED" \
     $MAPQ_FILTER \
-    $RERUN
+    $RERUN \
+    "${FEATURES_PATH:-./data/internal_features}"
 
 echo "job finished successfully"
-# echo "deleting temp files"
-# rm ./data/sample_temp/${SAMPLE_ID}_autosomes_chr_id.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_wps_intersect.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_U_D.bed
-# rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed
+echo "deleting temp files"
+rm ./data/sample_temp/${SAMPLE_ID}_autosomes_chr_id.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_centroids_openchrom_intersect.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_openchrom_intersect.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_ocf.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_wps_intersect.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_U_D.bed
+rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region.bed
 # rm ./data/sample_temp/${SAMPLE_ID}_frag_ends_with_region_sorted.bed
 

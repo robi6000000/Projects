@@ -1,5 +1,6 @@
 import os
 import sys
+import gc
 import pandas as pd
 import numpy as np
 from modules.cfdna_model import CFDNAModel
@@ -29,14 +30,26 @@ if __name__ == "__main__":
 
     print(f"Loading matrix for {feature}")
     mx = pd.read_csv(matrix_path, index_col=0, low_memory=False)
+    metadata_cols = ['seqrun_id', 'sample_name', 'stage', 'disease', 'tissue']
+    numeric_cols = [c for c in mx.columns if c not in metadata_cols]
+    mx[numeric_cols] = mx[numeric_cols].apply(pd.to_numeric, errors='coerce').astype(np.float32)
+
+    mem_gb = mx.memory_usage(deep=True).sum() / (1024 ** 3)
+    print(f"Matrix loaded: shape={mx.shape}, approx_memory={mem_gb:.2f} GB")
+
     gc_content = pd.read_csv(gc_path)
 
     model = CFDNAModel(mx, gc_content, feature=feature,
                        kernel=kernel, gc_correction=gc_correction, 
                        pca=pca, pca_components=pca_components, cv_repeats=cv_repeats)
 
-    print(f"Training SVM for {feature}")
-    results = model.train_svm()
+    metadata = mx[[c for c in metadata_cols if c in mx.columns]].copy()
+    # delete large dataframe to free memory
+    del mx
+    gc.collect()
+
+    print(f"Cross-validating SVM for {feature}")
+    results = model.cv_svm()
 
     output = pd.DataFrame({
         'sample_id': results['sample_ids'],
@@ -46,8 +59,8 @@ if __name__ == "__main__":
 
     metadata_cols = ['sample_name', 'stage', 'disease', 'tissue']
     for col in metadata_cols:
-        if col in mx.columns:
-            output[col] = mx[col].values
+        if col in metadata.columns:
+            output[col] = metadata[col].values
     output = output[['sample_id'] + metadata_cols + ['label', 'probability']]
 
     # adjust specific folder name

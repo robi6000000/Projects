@@ -190,7 +190,7 @@ rule fastqc:
 rule trimmomatic:
     input: 
         fastq=expand("fastq/{{sample}}.{read_name}.fq.gz", read_name=["R1", "R2"]),
-        adapter=HTTP.remote("https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE-2.fa"),
+        adapter="/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa",
     output:
         trim=expand("trimmomatic/{{sample}}.R{rg}.{pairing}.fq.gz", rg=[1, 2], pairing=["paired", "unpaired"]),
     log: "trimmomatic/{sample}.trimmomatic.summary.txt",

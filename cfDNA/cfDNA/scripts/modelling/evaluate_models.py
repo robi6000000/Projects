@@ -3,6 +3,7 @@ from sklearn.metrics import roc_auc_score
 import pandas as pd
 import os
 import sys
+import re
 
 
 zhou_scores = {
@@ -12,19 +13,33 @@ zhou_scores = {
 }
 
 
+def extract_feature_and_mapq(file_name):
+    """
+    Parse filenames like:
+      svm_linear_mapq45_edm_cv_probs.csv
+      svm_linear_edm_cv_probs.csv
+    Returns: (feature, mapq_value_or_None)
+    """
+    m = re.match(r"^svm_[^_]+(?:_mapq(\d+))?_(.+)_cv_probs\.csv$", file_name)
+    if not m:
+        return None, None
+    mapq = m.group(1)
+    feature = m.group(2)
+    return feature, mapq
+
+
 def should_use_file(file_name, mapq_filter=None):
-    """
-    check if the file does or does not contain mapq filtering
-    """
-    if not file_name.endswith(".csv"):
+    if not file_name.endswith("_probs.csv"):
         return False
 
-    stem = file_name[:-4]
-    if mapq_filter is None:
-        return "_mapq" not in stem
+    feature, mapq = extract_feature_and_mapq(file_name)
+    if feature is None:
+        return False
 
-    mapq_token = f"_mapq{mapq_filter}"
-    return mapq_token in stem
+    if mapq_filter is None:
+        return True
+
+    return str(mapq_filter) == str(mapq)
 
 def evaluate_results(file):
     df = pd.read_csv(file)
@@ -48,18 +63,20 @@ if __name__ == "__main__":
         if not should_use_file(file, mapq_filter):
             continue
 
-        # specific feature naming containing _
-        if "ext_poem_prem" in file:
-            feature = "ext_poem_prem" if mapq_filter is None else f"mapq{mapq_filter}_ext_poem_prem"
-        elif "poem_prem" in file:
-            feature = "poem_prem" if mapq_filter is None else f"mapq{mapq_filter}_poem_prem"
-        elif "wps_compute" in file:
-            feature = "wps_compute" if mapq_filter is None else f"mapq{mapq_filter}_wps_compute"
+        feature, file_mapq = extract_feature_and_mapq(file)
+        if feature is None:
+            continue
+
+        if file_mapq is not None:
+            feature_name = f"mapq{file_mapq}_{feature}"
+            zhou_key = feature
         else:
-            feature = file.split("_")[-2] if mapq_filter is None else f"mapq{mapq_filter}_{file.split('_')[-2]}"
+            feature_name = feature
+            zhou_key = feature
+
         auc = evaluate_results(os.path.join(svm_dir, file))
-        zhou_auc = zhou_scores.get("_".join(feature.split("_")[1:]), None)
-        results.append({'feature': feature, 'auc': auc, 'zhou_auc': zhou_auc})
+        zhou_auc = zhou_scores.get(zhou_key, None)
+        results.append({'feature': feature_name, 'auc': auc, 'zhou_auc': zhou_auc})
     if results == []:
         print(f"No probs files found")
         sys.exit(1)

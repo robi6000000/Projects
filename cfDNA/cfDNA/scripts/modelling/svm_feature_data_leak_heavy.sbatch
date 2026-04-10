@@ -2,11 +2,11 @@
 #SBATCH --job-name=cfdna_svm
 #SBATCH --output=logs/svm_%x_%j.out
 #SBATCH --error=logs/svm_%x_%j.err
-#SBATCH --time=24:00:00
-#SBATCH --mem=48G
+#SBATCH --time=48:00:00
+#SBATCH --mem=64G
 #SBATCH --array=0-0
 
-echo "Modelling SVM on heavier features using 48G, this svm is using standardization before CV"
+echo "Modelling SVM on heavier features using 64G, this svm is using standardization before CV"
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 mkdir -p logs
 

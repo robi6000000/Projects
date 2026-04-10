@@ -1,0 +1,42 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Provided resources: mem_mb=14400, mem_mib=13733, disk_mb=4309, disk_mib=4110, time=2880, time_min=300, attempt=1
+Conda environments: ignored
+Select jobs to execute...
+/data/users/kenderes/miniconda3/envs/snakemake/lib/python3.12/site-packages/stopit/__init__.py:10: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+
+[Sun Apr  5 22:49:09 2026]
+rule trimmomatic:
+    input: fastq/gsca_pca_00001_01_01_pl.R1.fq.gz, fastq/gsca_pca_00001_01_01_pl.R2.fq.gz, /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa
+    output: trimmomatic/gsca_pca_00001_01_01_pl.R1.paired.fq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R1.unpaired.fq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.paired.fq.gz, trimmomatic/gsca_pca_00001_01_01_pl.R2.unpaired.fq.gz
+    log: trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt
+    jobid: 0
+    reason: Forced execution
+    wildcards: sample=gsca_pca_00001_01_01_pl
+    threads: 8
+    resources: mem_mb=14400, mem_mib=13733, disk_mb=4309, disk_mib=4110, tmpdir=/data/users/kenderes/tmp, time=2880, time_min=300, attempt=1
+
+Trimmomatic arguments:
+HEADCROP:6 ILLUMINACLIP:/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 AVGQUAL:20 MINLEN:36 
+Using temporary directory: /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_
+trimmomatic PE -threads 8 fastq/gsca_pca_00001_01_01_pl.R1.fq.gz fastq/gsca_pca_00001_01_01_pl.R2.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R1P.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R1U.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R2P.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R2U.fq.gz HEADCROP:6 ILLUMINACLIP:/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 AVGQUAL:20 MINLEN:36  2>&1 | tee trimmomatic/gsca_pca_00001_01_01_pl.trimmomatic.summary.txt
+TrimmomaticPE: Started with arguments:
+ -threads 8 fastq/gsca_pca_00001_01_01_pl.R1.fq.gz fastq/gsca_pca_00001_01_01_pl.R2.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R1P.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R1U.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R2P.fq.gz /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/local_tmp/tmp3o0xq_x_/R2U.fq.gz HEADCROP:6 ILLUMINACLIP:/gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa:2:30:10:2:keepBothReads LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 AVGQUAL:20 MINLEN:36
+ILLUMINACLIP: Using adapter file from user-specified absolute path: /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/supplementary/TruSeq3-PE-2.fa
+Using PrefixPair: 'TACACTCTTTCCCTACACGACGCTCTTCCGATCT' and 'GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT'
+Using Long Clipping Sequence: 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA'
+Using Long Clipping Sequence: 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC'
+Using Long Clipping Sequence: 'GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT'
+Using Long Clipping Sequence: 'TACACTCTTTCCCTACACGACGCTCTTCCGATCT'
+ILLUMINACLIP: Using 1 prefix pairs, 4 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Quality encoding detected as phred33
+Input Read Pairs: 20718683 Both Surviving: 19977033 (96.42%) Forward Only Surviving: 626023 (3.02%) Reverse Only Surviving: 92040 (0.44%) Dropped: 23587 (0.11%)
+TrimmomaticPE: Completed successfully
+Copying to destination
+Not cleaning up /gen-nas01/active_projects/gen-manager/data/projects/liquid_biopsy/Projects/cfDNA/cfDNA/.snakemake/scripts/tmphy_qfnyz.workflow.slurm.py
+[Sun Apr  5 22:54:18 2026]
+Finished job 0.
+1 of 1 steps (100%) done

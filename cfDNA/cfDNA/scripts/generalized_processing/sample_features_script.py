@@ -22,7 +22,8 @@ pd.set_option('display.max_rows', None)
 class SampleFeatures:
     def __init__(self, sample_id, openchrom_path, frag_centroids_openchrom_intersect_path, 
                  frag_ends_openchrom_intersect_path, frag_ends_ocf_path, frag_wps_intersect_path, hg19_fasta_path,
-                 rerun=False, rerun_features: list = None, mapq_filter: int = None, mapq_filter_features: list = None):
+                 rerun=False, rerun_features: list = None, mapq_filter: int = None, mapq_filter_features: list = None,
+                 features_path: str = './data/internal_features'):
         
         self.sample_id = sample_id
         self.openchrom_path = openchrom_path
@@ -36,6 +37,7 @@ class SampleFeatures:
         self.rerun_features = rerun_features
         self.mapq_filter = mapq_filter
         self.mapq_filter_features = mapq_filter_features
+        self.features_path = features_path
         
         self.load()
         print("Number of unique region IDs:", self.df_region_ids.shape[0])
@@ -118,10 +120,21 @@ class SampleFeatures:
             self.frag_centroids_openchrom_intersect["f_end"] - 
             self.frag_centroids_openchrom_intersect["f_start"]
         )
-        self.frag_wps_openchrom_intersect["length"] = (
-            self.frag_wps_openchrom_intersect["f_end"] - 
-            self.frag_wps_openchrom_intersect["f_start"]
-        )
+        try:
+            self.frag_wps_openchrom_intersect["length"] = (
+                self.frag_wps_openchrom_intersect["f_end"] - 
+                self.frag_wps_openchrom_intersect["f_start"]
+            )
+        except TypeError:
+            print("WPS subtraction debug:")
+            print("f_start dtype:", self.frag_wps_openchrom_intersect["f_start"].dtype)
+            print("f_end dtype:", self.frag_wps_openchrom_intersect["f_end"].dtype)
+            print("f_start sample:", self.frag_wps_openchrom_intersect["f_start"].head(10).tolist())
+            print("f_end sample:", self.frag_wps_openchrom_intersect["f_end"].head(10).tolist())
+            debug_rows = self.frag_wps_openchrom_intersect[["f_chrom", "f_start", "f_end", "score", "strand", "frag_id"]].head(10)
+            print("WPS rows before subtraction:")
+            print(debug_rows.to_string(index=False))
+            raise
 
         # check if folders exist for each sample in cristiano_features
         base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'wps_compute', 'edm', 'poem', 'prem', 'poem_prem', 'ext_poem_prem']
@@ -130,7 +143,7 @@ class SampleFeatures:
             mapq_features = self.mapq_filter_features if self.mapq_filter_features is not None else base_features
             folders_to_create += [f'{f}_mapq{self.mapq_filter}' for f in mapq_features]
         for folder in folders_to_create:
-            os.makedirs(f'./data/cristiano_features/{folder}', exist_ok=True)
+            os.makedirs(f'{self.features_path}/{folder}', exist_ok=True)
 
     def calculate_features(self):
         try:
@@ -173,11 +186,11 @@ class SampleFeatures:
         except Exception as e:
             print(f"Error calculating ifs: {e}")
             self.ifs = None
-        try:
-            self.wps = self.get_wps()
-        except Exception as e:
-            print(f"Error calculating wps: {e}")
-            self.wps = None
+        # try:
+        #     self.wps = self.get_wps()
+        # except Exception as e:
+        #     print(f"Error calculating wps: {e}")
+        #     self.wps = None
         try:
             self.edm = self.get_edm()
         except Exception as e:
@@ -215,7 +228,7 @@ class SampleFeatures:
         featurename = "length"
         if self._use_mapq_filter("length"):
             featurename = f"length_mapq{self.mapq_filter}"
-        filepath = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filepath = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filepath, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filepath, index_col=0)
@@ -246,14 +259,16 @@ class SampleFeatures:
         chrom_order = [f"chr{i}" for i in range(1, 23)]
         df_length = length_matrix.reindex(chrom_order, fill_value=0)
         print("df_length:", df_length.shape)
-        df_length.to_csv(filepath)      # save to feature folder
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
+        df_length.to_csv(filepath)
         return df_length
     
     def get_pfe(self):
         featurename = "pfe"
         if self._use_mapq_filter("pfe"):
             featurename = f"pfe_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -294,14 +309,16 @@ class SampleFeatures:
         df_pfe["pfe"] = df_pfe["pfe"].fillna(0)
 
         print("df_pfe:", df_pfe.shape)
-        df_pfe.to_csv(filename)     
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        df_pfe.to_csv(filename)
         return df_pfe
     
     def get_fsr(self):
         featurename = 'fsr'
         if self._use_mapq_filter("fsr"):
             featurename = f"fsr_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -332,6 +349,7 @@ class SampleFeatures:
         df_fsr = df_fsr.merge(self.df_region_ids, on="region_id", how="right").set_index('region_id')
         df_fsr = df_fsr.fillna(0)
         print("df_fsr:", df_fsr.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
         df_fsr.to_csv(filename)
         return df_fsr
     
@@ -342,7 +360,7 @@ class SampleFeatures:
         featurename = 'fsd'
         if self._use_mapq_filter("fsd"):
             featurename = f"fsd_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -378,6 +396,8 @@ class SampleFeatures:
         df_fsd = df_fsd.reindex(chrom_order, fill_value=0)
 
         print("df_fsd:", df_fsd.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_fsd.to_csv(filename)
         return df_fsd
     
@@ -386,7 +406,7 @@ class SampleFeatures:
         featurename = 'coverage'
         if self._use_mapq_filter("coverage"):
             featurename = f"coverage_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -410,6 +430,8 @@ class SampleFeatures:
         # fill the empty regions with 0
         df_cov["coverage"] = df_cov["coverage"].fillna(0)
         print("df_cov:", df_cov.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_cov.to_csv(filename)
         return df_cov
     
@@ -418,7 +440,7 @@ class SampleFeatures:
         featurename = 'ends'
         if self._use_mapq_filter("ends"):
             featurename = f"ends_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -439,6 +461,8 @@ class SampleFeatures:
         df_end = pd.DataFrame(counts).rename(columns={0: "end"})
         df_end["end"] = df_end["end"].fillna(0)
         print("df_end:", df_end.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_end.to_csv(filename)
         return df_end
 
@@ -446,7 +470,7 @@ class SampleFeatures:
         featurename = 'ocf'
         if self._use_mapq_filter("ocf"):
             featurename = f"ocf_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -497,6 +521,8 @@ class SampleFeatures:
                 .fillna(0))
         df_ocf.set_index('region_id', inplace=True)
         print("df_ocf:", df_ocf.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_ocf.to_csv(filename)
         return df_ocf
     
@@ -504,7 +530,7 @@ class SampleFeatures:
         featurename = 'ifs'
         if self._use_mapq_filter("ifs"):
             featurename = f"ifs_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -537,6 +563,8 @@ class SampleFeatures:
         df_ifs = self.df_region_ids.merge(df_ifs[["region_id", "IFS"]], on="region_id", how="left").fillna(0)
         df_ifs.set_index('region_id', inplace=True)
         print('df_ifs:', df_ifs.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_ifs.to_csv(filename)
         return df_ifs
     
@@ -567,7 +595,7 @@ class SampleFeatures:
         featurename = "wps"
         if self._use_mapq_filter("wps"):
             featurename = f"wps_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -592,6 +620,8 @@ class SampleFeatures:
         df_wps = self.df_region_ids.merge(df_wps, on="region_id", how="left").set_index('region_id')
         df_wps["wps"] = df_wps["wps"].fillna(0)
         print("df_wps:", df_wps.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_wps.to_csv(filename)
         return df_wps
 
@@ -603,7 +633,7 @@ class SampleFeatures:
         featurename = "wps_compute"
         if self._use_mapq_filter("wps_compute"):
             featurename = f"wps_compute_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -657,6 +687,8 @@ class SampleFeatures:
         df_wps["wps_compute"] = df_wps["wps_compute"].fillna(0)
         
         print("df_wps_compute:", df_wps.shape)
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_wps.to_csv(filename)
         return df_wps
         
@@ -713,7 +745,7 @@ class SampleFeatures:
         featurename = "edm"
         if self._use_mapq_filter("edm"):
             featurename = f"edm_mapq{self.mapq_filter}"
-        filepath = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filepath = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filepath, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filepath, index_col=0)
@@ -726,6 +758,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_edm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
+            print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
             df_edm.to_csv(filepath)
             return df_edm
         # get end positions
@@ -771,6 +805,8 @@ class SampleFeatures:
         df_edm = df_edm.reindex(chrom_order, fill_value=0)
         
         print(f"df_edm: {df_edm.shape}")
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
         df_edm.to_csv(filepath)
         return df_edm
     
@@ -781,7 +817,7 @@ class SampleFeatures:
         featurename = 'poem'
         if self._use_mapq_filter("poem"):
             featurename = f"poem_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -794,6 +830,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
             df_poem.to_csv(filename)
             return df_poem
         # get end positions
@@ -829,6 +867,8 @@ class SampleFeatures:
         df_poem = df_poem.reindex(chrom_order, fill_value=0)
         
         print(f"df_poem: {df_poem.shape}")
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_poem.to_csv(filename)
         return df_poem
 
@@ -839,7 +879,7 @@ class SampleFeatures:
         featurename = 'prem'
         if self._use_mapq_filter("prem"):
             featurename = f"prem_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -852,6 +892,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
             df_prem.to_csv(filename)
             return df_prem
         # get end positions
@@ -888,6 +930,8 @@ class SampleFeatures:
         df_prem = df_prem.reindex(chrom_order, fill_value=0)
 
         print(f"df_prem: {df_prem.shape}")
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_prem.to_csv(filename)
         return df_prem
     
@@ -898,7 +942,7 @@ class SampleFeatures:
         featurename = 'poem_prem'
         if self._use_mapq_filter("poem_prem"):
             featurename = f"poem_prem_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -911,6 +955,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
             df_poem.to_csv(filename)
             return df_poem
         # get end positions
@@ -946,6 +992,8 @@ class SampleFeatures:
         df_poem_prem = df_poem_prem.reindex(chrom_order, fill_value=0)
         
         print(f"df_poem_prem: {df_poem_prem.shape}")
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_poem_prem.to_csv(filename)
         return df_poem_prem
     
@@ -959,7 +1007,7 @@ class SampleFeatures:
         featurename = 'ext_poem_prem'
         if self._use_mapq_filter("ext_poem_prem"):
             featurename = f"ext_poem_prem_mapq{self.mapq_filter}"
-        filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
             df = pd.read_csv(filename, index_col=0)
@@ -973,6 +1021,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_ext_poem_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
             df_ext_poem_prem.to_csv(filename)
             return df_ext_poem_prem
         # get end positions
@@ -1007,6 +1057,8 @@ class SampleFeatures:
         df_ext_poem_prem = df_ext_poem_prem.reindex(chrom_order, fill_value=0)
         
         print(f"df_ext_poem_prem: {df_ext_poem_prem.shape}")
+        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
+        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
         df_ext_poem_prem.to_csv(filename)
         return df_ext_poem_prem
     
@@ -1016,8 +1068,8 @@ class SampleFeatures:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) not in [6, 7, 8]:
-        print("use: python sample_features_script.py sample_id frag_centroids_openchrom_intersect_path frag_ends_openchrom_intersect_path frag_ends_ocf_path frag_wps_intersect_path [mapq_filter] [rerun]")
+    if len(sys.argv) not in [6, 7, 8, 9]:
+        print("use: python sample_features_script.py sample_id frag_centroids_openchrom_intersect_path frag_ends_openchrom_intersect_path frag_ends_ocf_path frag_wps_intersect_path [mapq_filter] [rerun] [features_path]")
         sys.exit(1)
     
     openchrom_path = './data/processing/openchrom_with_id.bed'
@@ -1035,7 +1087,7 @@ if __name__ == "__main__":
             mapq_filter = int(sys.argv[6])
 
     rerun = True
-    if len(sys.argv) == 8:
+    if len(sys.argv) >= 8:
         rerun_arg = sys.argv[7].strip().lower()
         if rerun_arg in ['true', '1', 'yes', 'y']:
             rerun = True
@@ -1044,6 +1096,10 @@ if __name__ == "__main__":
         else:
             print(f"Invalid rerun value: {sys.argv[7]}. Use true/false.")
             sys.exit(1)
+
+    features_path = './data/internal_features'
+    if len(sys.argv) >= 9:
+        features_path = sys.argv[8]
     
     sample_features = SampleFeatures(
         sample_id,
@@ -1056,6 +1112,7 @@ if __name__ == "__main__":
         rerun=rerun,
         rerun_features=None,  
         mapq_filter=mapq_filter,
-        mapq_filter_features=None  # Filter all features
+        mapq_filter_features=None,
+        features_path=features_path
     )
     sample_features.calculate_features()

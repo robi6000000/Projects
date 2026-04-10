@@ -34,8 +34,8 @@ if __name__ == "__main__":
                        kernel=kernel, gc_correction=gc_correction, 
                        pca=pca, pca_components=pca_components, cv_repeats=cv_repeats)
 
-    print(f"Training SVM for {feature}")
-    results = model.train_svm()
+    print(f"Cross-validating SVM for {feature}")
+    results = model.cv_svm()
 
     output = pd.DataFrame({
         'sample_id': results['sample_ids'],

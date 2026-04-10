@@ -26,6 +26,11 @@ class CFDNAModel:
         self.cv_repeats = cv_repeats
         print(f" Feature: {feature}, GC correction: {gc_correction}, PCA: {pca}, Kernel: {kernel}")
         self.gc_content = gc_content
+        self.pca_components = float(pca_components)
+        if self.pca_components > 1:
+            if not self.pca_components.is_integer():
+                raise ValueError(f"PCA component count must be an integer when > 1, got {pca_components}")
+            self.pca_components = int(self.pca_components)
         X = mx.drop(columns=[c for c in self.metadata_cols if c in mx.columns])
         # standardize
         X = MatrixProcessor(X, gc_content).standardize()
@@ -36,7 +41,7 @@ class CFDNAModel:
         X = X.replace([np.inf, -np.inf], np.nan).fillna(0)
         # PCA
         if pca:
-            pca_model = PCA(n_components=pca_components)
+            pca_model = PCA(n_components=self.pca_components)
             X = pd.DataFrame(pca_model.fit_transform(X), index=X.index)
         self.matrix = X
         self.sample_ids = X.index.tolist()
@@ -54,7 +59,7 @@ class CFDNAModel:
     def split(self, test_size=0.2, random_state=1):
         return train_test_split(self.matrix, self.labels, test_size=test_size, random_state=random_state)
     
-    def train_svm(self):
+    def cv_svm(self):
         """
         Trains an SVM model using 10x10 repeated stratified cross validation.
         Returns one averaged out-of-fold probability per sample.

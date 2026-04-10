@@ -2,7 +2,6 @@
 #SBATCH --job-name=cfdna_svm
 #SBATCH --output=logs/svm_%x_%j.out
 #SBATCH --error=logs/svm_%x_%j.err
-#SBATCH --time=24:00:00
 #SBATCH --mem=24G
 #SBATCH --array=0-11%4
 
