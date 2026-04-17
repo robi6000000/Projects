@@ -135,11 +135,7 @@ class SampleFeatures:
         except Exception as e:
             print(f"Error calculating ifs: {e}")
             self.ifs = None
-        try:
-            self.wps = self.get_wps()
-        except Exception as e:
-            print(f"Error calculating wps: {e}")
-            self.wps = None
+        # Legacy WPS feature is disabled.
         try:
             self.edm = self.get_edm()
         except Exception as e:

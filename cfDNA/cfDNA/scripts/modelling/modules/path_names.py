@@ -2,9 +2,8 @@ from pathlib import Path
 
 
 features = (
-    "ext_poem_prem",
-    "poem_prem",
-    "wps_compute",
+    "eedm",
+    "iedm",
     "length",
     "edm",
     "fsd",
@@ -14,7 +13,7 @@ features = (
     "ends",
     "ocf",
     "ifs",
-    "wps",
+    "wps"
 )
 
 

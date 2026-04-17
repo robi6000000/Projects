@@ -3,7 +3,7 @@
 #SBATCH --output=logs/svm_%x_%j.out
 #SBATCH --error=logs/svm_%x_%j.err
 #SBATCH --mem=24G
-#SBATCH --array=0-11%4
+#SBATCH --array=0-10%4
 
 echo "Modelling SVM on lighter features using 24G, this svm is using standardization and pca inside the CV loop"
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
@@ -13,7 +13,7 @@ cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 # GC_CORRECTION=$3
 # PCA=$4
 # CV_REPEATS=$5 (optional, default 10)
-FEATURES=(length edm poem_prem ext_poem_prem fsd pfe coverage ends ocf ifs wps wps_compute)
+FEATURES=(length edm iedm eedm fsd pfe coverage ends ocf ifs wps)
 FEATURE=${FEATURES[$SLURM_ARRAY_TASK_ID]}
 KERNEL=$1
 GC_CORRECTION=$2

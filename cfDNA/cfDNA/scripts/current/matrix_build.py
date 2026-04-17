@@ -108,8 +108,8 @@ if __name__ == "__main__":
                     'pfe', 'fsr', 'fsd', 'coverage', 
                     'ends', 
                     'ocf', 
-                    'ifs', 'wps_compute', 'edm', 
-                    'poem_prem', 'ext_poem_prem'
+                    'ifs', 'wps', 'edm', 
+                    'iedm', 'eedm'
                     ]
         mapq_filters = [30, 20, 10, None]
         

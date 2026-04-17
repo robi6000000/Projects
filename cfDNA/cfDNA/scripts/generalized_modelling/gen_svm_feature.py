@@ -11,7 +11,7 @@ GC_CORRECT_FEATURES = ['pfe', 'fsr', 'coverage', 'ends', 'ocf', 'ifs', 'wps']
 if __name__ == "__main__":
     if len(sys.argv) < 9:
         print(
-            "Usage: python scripts/generalized_modelling/gen_cv_svm_feature.py "
+            "Usage: python scripts/generalized_modelling/gen_svm_feature.py "
             "[option:cv/train/test] [matrix_path] [parent_matrix_path] [gc_path] [feature] [kernel] "
             "[gc_correction: bool] [pca: bool] [pca_components] [cv_repeats] [mapq_filter] [model_path] [test_output_path]"
         )
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     gc_content = pd.read_csv(gc_path)
 
     model = CFDNAModel(mx, gc_content, feature=feature,
-                       kernel=kernel, gc_correction=gc_correction, 
+                       kernel=kernel, gc_correction=gc_correction,
                        pca=pca, pca_components=pca_components, cv_repeats=cv_repeats)
 
     metadata = mx[[c for c in metadata_cols if c in mx.columns]].copy()

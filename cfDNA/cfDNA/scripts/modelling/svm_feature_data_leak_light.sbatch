@@ -4,7 +4,7 @@
 #SBATCH --error=logs/svm_%x_%j.err
 #SBATCH --time=24:00:00
 #SBATCH --mem=24G
-#SBATCH --array=0-11%4
+#SBATCH --array=0-10%4
 
 echo "Modelling SVM on lighter features using 24G, this svm is using standardization before CV"
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
@@ -14,7 +14,7 @@ mkdir -p logs
 source /data/users/kenderes/miniconda3/etc/profile.d/conda.sh
 conda activate cfdna
 
-FEATURES=(length edm poem_prem ext_poem_prem fsd pfe coverage ends ocf ifs wps wps_compute)
+FEATURES=(length edm iedm eedm fsd pfe coverage ends ocf ifs wps)
 FEATURE=${FEATURES[$SLURM_ARRAY_TASK_ID]}
 # FEATURE=$1
 # KERNEL=$2

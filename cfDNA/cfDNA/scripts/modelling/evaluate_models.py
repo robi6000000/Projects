@@ -3,7 +3,6 @@ from sklearn.metrics import roc_auc_score
 import pandas as pd
 import os
 import sys
-import re
 
 
 zhou_scores = {
@@ -13,26 +12,31 @@ zhou_scores = {
 }
 
 
-def extract_feature_and_mapq(file_name):
-    """
-    Parse filenames like:
-      svm_linear_mapq45_edm_cv_probs.csv
-      svm_linear_edm_cv_probs.csv
-    Returns: (feature, mapq_value_or_None)
-    """
-    m = re.match(r"^svm_[^_]+(?:_mapq(\d+))?_(.+)_cv_probs\.csv$", file_name)
-    if not m:
+def parse_probs_filename(file_name):
+    suffixes = ["_cv_probs.csv", "_probs.csv"]
+    suffix = next((s for s in suffixes if file_name.endswith(s)), None)
+    if suffix is None:
         return None, None
-    mapq = m.group(1)
-    feature = m.group(2)
+
+    stem = file_name[: -len(suffix)]
+    parts = stem.split("_")
+    if len(parts) < 2:
+        return None, None
+    feature = parts[-1]
+
+    mapq = None
+    for token in parts:
+        if token.startswith("mapq") and token[4:].isdigit():
+            mapq = token[4:]
+
     return feature, mapq
 
 
 def should_use_file(file_name, mapq_filter=None):
-    if not file_name.endswith("_probs.csv"):
+    if not (file_name.endswith("_probs.csv") or file_name.endswith("_cv_probs.csv")):
         return False
 
-    feature, mapq = extract_feature_and_mapq(file_name)
+    feature, mapq = parse_probs_filename(file_name)
     if feature is None:
         return False
 
@@ -63,16 +67,12 @@ if __name__ == "__main__":
         if not should_use_file(file, mapq_filter):
             continue
 
-        feature, file_mapq = extract_feature_and_mapq(file)
+        feature, file_mapq = parse_probs_filename(file)
         if feature is None:
             continue
 
-        if file_mapq is not None:
-            feature_name = f"mapq{file_mapq}_{feature}"
-            zhou_key = feature
-        else:
-            feature_name = feature
-            zhou_key = feature
+        feature_name = feature
+        zhou_key = feature
 
         auc = evaluate_results(os.path.join(svm_dir, file))
         zhou_auc = zhou_scores.get(zhou_key, None)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     results_df = pd.DataFrame(results)
-    results_df = results_df.sort_values(by='auc', ascending=False).reset_index(drop=True)
+    results_df = results_df.sort_values(by='feature', ascending=False).reset_index(drop=True)
     if not os.path.exists("data/model_results"):
         os.makedirs("data/model_results")
     output_path = f"data/model_results/{result_name}_results.csv"

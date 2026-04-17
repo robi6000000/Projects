@@ -124,7 +124,7 @@ class SampleFeatures:
         )
 
         # check if folders exist for each sample in cristiano_features
-        base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'wps_compute', 'edm', 'poem', 'prem', 'poem_prem', 'ext_poem_prem']
+        base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'edm', 'poem', 'prem', 'iedm', 'eedm']
         folders_to_create = list(base_features)
         if self.mapq_filter is not None:
             mapq_features = self.mapq_filter_features if self.mapq_filter_features is not None else base_features
@@ -173,26 +173,26 @@ class SampleFeatures:
         except Exception as e:
             print(f"Error calculating ifs: {e}")
             self.ifs = None
-        try:
-            self.wps = self.get_wps()
-        except Exception as e:
-            print(f"Error calculating wps: {e}")
-            self.wps = None
+        # try:
+        #     self.wps = self.get_wps()
+        # except Exception as e:
+        #     print(f"Error calculating wps: {e}")
+        #     self.wps = None
         try:
             self.edm = self.get_edm()
         except Exception as e:
             print(f"Error calculating edm: {e}")
             self.edm = None
         try:
-            self.poem_prem = self.get_poem_prem()
+            self.iedm = self.get_iedm()
         except Exception as e:
-            print(f"Error calculating poem_prem: {e}")
-            self.poem_prem = None
+            print(f"Error calculating iedm: {e}")
+            self.iedm = None
         try:
-            self.ext_poem_prem = self.get_ext_poem_prem()
+            self.eedm = self.get_eedm()
         except Exception as e:
-            print(f"Error calculating ext_poem_prem: {e}")
-            self.ext_poem_prem = None
+            print(f"Error calculating eedm: {e}")
+            self.eedm = None
         try:
             self.poem = self.get_poem()
         except Exception as e:
@@ -204,10 +204,10 @@ class SampleFeatures:
             print(f"Error calculating prem: {e}")
             self.prem = None
         try:
-            self.wps_compute = self.get_wps_compute()
+            self.wps = self.get_wps()
         except Exception as e:
-            print(f"Error calculating wps_compute: {e}")
-            self.wps_compute = None
+            print(f"Error calculating wps: {e}")
+            self.wps = None
 
 
     def get_length(self):
@@ -540,7 +540,7 @@ class SampleFeatures:
         df_ifs.to_csv(filename)
         return df_ifs
     
-    def get_wps(self):
+    def get_wps_old(self):
         """
         (WPS), which is the number of DNA fragments completely spanning a 120 bp window centered at a given genomic coordinate
         minus the number of fragments with an endpoint within that
@@ -595,14 +595,14 @@ class SampleFeatures:
         df_wps.to_csv(filename)
         return df_wps
 
-    def get_wps_compute(self):
+    def get_wps(self):
         """
         compute wps from fragment ends instead of bigwig file
         uses frag_wps_openchrom_intersect.
         """
-        featurename = "wps_compute"
-        if self._use_mapq_filter("wps_compute"):
-            featurename = f"wps_compute_mapq{self.mapq_filter}"
+        featurename = "wps"
+        if self._use_mapq_filter("wps"):
+            featurename = f"wps_mapq{self.mapq_filter}"
         filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
@@ -613,7 +613,7 @@ class SampleFeatures:
         half_window = 60
         wps_means = []
 
-        wps_frags = self._filtered(self.frag_wps_openchrom_intersect, "wps_compute")
+        wps_frags = self._filtered(self.frag_wps_openchrom_intersect, "wps")
         filtered_frags = wps_frags[
             (wps_frags['length'] >= 120) &
             (wps_frags['length'] <= 180)
@@ -652,11 +652,11 @@ class SampleFeatures:
             mean_wps = np.mean(wps_scores_region) if wps_scores_region else 0.0
             wps_means.append((region_id, mean_wps))
 
-        df_wps = pd.DataFrame(wps_means, columns=["region_id", "wps_compute"])
+        df_wps = pd.DataFrame(wps_means, columns=["region_id", "wps"])
         df_wps = self.df_region_ids.merge(df_wps, on="region_id", how="left").set_index('region_id')
-        df_wps["wps_compute"] = df_wps["wps_compute"].fillna(0)
+        df_wps["wps"] = df_wps["wps"].fillna(0)
         
-        print("df_wps_compute:", df_wps.shape)
+        print("df_wps:", df_wps.shape)
         df_wps.to_csv(filename)
         return df_wps
         
@@ -891,13 +891,13 @@ class SampleFeatures:
         df_prem.to_csv(filename)
         return df_prem
     
-    def get_poem_prem(self):
+    def get_iedm(self):
         """
         get combined poem and prem motif, 4 bases after frag_start and 4 bases before frag_end (reverse complemented)
         """
-        featurename = 'poem_prem'
-        if self._use_mapq_filter("poem_prem"):
-            featurename = f"poem_prem_mapq{self.mapq_filter}"
+        featurename = 'iedm'
+        if self._use_mapq_filter("iedm"):
+            featurename = f"iedm_mapq{self.mapq_filter}"
         filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
@@ -905,7 +905,7 @@ class SampleFeatures:
             return df
 
         print(f"calculating {featurename}")
-        frags = self._filtered(self.frag_centroids_openchrom_intersect, "poem_prem")
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "iedm")
         if len(frags) == 0:
             print(f"Warning - No fragments after MAPQ filtering for {featurename}")
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
@@ -939,26 +939,26 @@ class SampleFeatures:
         all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
         motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
 
-        df_poem_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        df_iedm = motif_counts.div(motif_counts.sum(axis=1), axis=0)
         
         # Reorder to chr1-chr22
         chrom_order = [f"chr{i}" for i in range(1, 23)]
-        df_poem_prem = df_poem_prem.reindex(chrom_order, fill_value=0)
+        df_iedm = df_iedm.reindex(chrom_order, fill_value=0)
         
-        print(f"df_poem_prem: {df_poem_prem.shape}")
-        df_poem_prem.to_csv(filename)
-        return df_poem_prem
+        print(f"df_iedm: {df_iedm.shape}")
+        df_iedm.to_csv(filename)
+        return df_iedm
     
     
-    def get_ext_poem_prem(self):
+    def get_eedm(self):
         """
         get combined external pre/post-end motif:
         - external pre-end: 4 bases before fragment start [f_start-4, f_start), reverse complemented
         - external post-end: 4 bases after fragment end [f_end, f_end+4), not reverse complemented
         """
-        featurename = 'ext_poem_prem'
-        if self._use_mapq_filter("ext_poem_prem"):
-            featurename = f"ext_poem_prem_mapq{self.mapq_filter}"
+        featurename = 'eedm'
+        if self._use_mapq_filter("eedm"):
+            featurename = f"eedm_mapq{self.mapq_filter}"
         filename = f"./data/cristiano_features/{featurename}/{self.sample_id}_{featurename}.csv"
         if self._use_saved_file(filename, featurename):
             print(f"file already exists {self.sample_id}")
@@ -967,14 +967,14 @@ class SampleFeatures:
 
         print(f"calculating {featurename}")
 
-        frags = self._filtered(self.frag_centroids_openchrom_intersect, "ext_poem_prem")
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "eedm")
         if len(frags) == 0:
             print(f"Warning - No fragments after MAPQ filtering for {featurename}")
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
-            df_ext_poem_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            df_ext_poem_prem.to_csv(filename)
-            return df_ext_poem_prem
+            df_eedm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            df_eedm.to_csv(filename)
+            return df_eedm
         # get end positions
         ends_start = frags[["f_chrom", "f_start"]].copy()
         ends_start = ends_start.rename(columns={"f_start": "pos"})
@@ -1000,15 +1000,15 @@ class SampleFeatures:
         all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
         motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
 
-        df_ext_poem_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        df_eedm = motif_counts.div(motif_counts.sum(axis=1), axis=0)
         
         # Reorder to chr1-chr22
         chrom_order = [f"chr{i}" for i in range(1, 23)]
-        df_ext_poem_prem = df_ext_poem_prem.reindex(chrom_order, fill_value=0)
+        df_eedm = df_eedm.reindex(chrom_order, fill_value=0)
         
-        print(f"df_ext_poem_prem: {df_ext_poem_prem.shape}")
-        df_ext_poem_prem.to_csv(filename)
-        return df_ext_poem_prem
+        print(f"df_eedm: {df_eedm.shape}")
+        df_eedm.to_csv(filename)
+        return df_eedm
     
 
     
