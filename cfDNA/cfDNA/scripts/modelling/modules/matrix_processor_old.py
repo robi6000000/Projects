@@ -4,7 +4,7 @@ from sklearn.preprocessing import scale
 from statsmodels.nonparametric.smoothers_lowess import lowess
 
 class MatrixProcessor:
-    metadata_cols = ['disease', 'dataset', 'material', 'stage', 'cancer_true']
+    metadata_cols = ['sample_name', 'stage', 'disease', 'tissue', 'cancer_true']
 
     def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame, X_train: pd.DataFrame = None):
         """
@@ -39,7 +39,7 @@ class MatrixProcessor:
     
     def GC_correction(self):
         """
-        Applies gc correction using lowess regression with a span of 0.75 and delta to speed up computation.
+        Applies gc correction using lowess regression with a span of 0.75.
         Has to be called on standardized matrix. 
         """
         gc_content = self.gc_content['gc_content'].values

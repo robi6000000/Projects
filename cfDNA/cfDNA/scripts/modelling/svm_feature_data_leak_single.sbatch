@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=svm_wps_compute
-#SBATCH --output=logs/svm_wps_compute_%x_%j.out
-#SBATCH --error=logs/svm_wps_compute_%x_%j.err
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 #SBATCH --time=24:00:00
 #SBATCH --mem=64G
 

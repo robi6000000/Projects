@@ -137,7 +137,7 @@ class SampleFeatures:
             raise
 
         # check if folders exist for each sample in cristiano_features
-        base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'edm', 'poem', 'prem', 'iedm', 'eedm']
+        base_features = ['length', 'pfe', 'fsr', 'fsd', 'coverage', 'ends', 'ocf', 'ifs', 'wps', 'edm', 'poem', 'prem', 'iedm', 'eedm', 'eoedm', 'cposedm']
         folders_to_create = list(base_features)
         if self.mapq_filter is not None:
             mapq_features = self.mapq_filter_features if self.mapq_filter_features is not None else base_features
@@ -207,6 +207,16 @@ class SampleFeatures:
             print(f"Error calculating eedm: {e}")
             self.eedm = None
         try:
+            self.eoedm = self.get_eoedm()
+        except Exception as e:
+            print(f"Error calculating eoedm: {e}")
+            self.eoedm = None
+        try:
+            self.cposedm = self.get_cposedm()
+        except Exception as e:
+            print(f"Error calculating cposedm: {e}")
+            self.cposedm = None
+        try:
             self.poem = self.get_poem()
         except Exception as e:
             print(f"Error calculating poem: {e}")
@@ -259,8 +269,8 @@ class SampleFeatures:
         chrom_order = [f"chr{i}" for i in range(1, 23)]
         df_length = length_matrix.reindex(chrom_order, fill_value=0)
         print("df_length:", df_length.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filepath}")
+        print(f"parent_dir:{os.path.dirname(filepath) or '.'} exists:{os.path.isdir(os.path.dirname(filepath) or '.')}")
         df_length.to_csv(filepath)
         return df_length
     
@@ -309,8 +319,8 @@ class SampleFeatures:
         df_pfe["pfe"] = df_pfe["pfe"].fillna(0)
 
         print("df_pfe:", df_pfe.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_pfe.to_csv(filename)
         return df_pfe
     
@@ -430,8 +440,8 @@ class SampleFeatures:
         # fill the empty regions with 0
         df_cov["coverage"] = df_cov["coverage"].fillna(0)
         print("df_cov:", df_cov.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_cov.to_csv(filename)
         return df_cov
     
@@ -461,8 +471,8 @@ class SampleFeatures:
         df_end = pd.DataFrame(counts).rename(columns={0: "end"})
         df_end["end"] = df_end["end"].fillna(0)
         print("df_end:", df_end.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_end.to_csv(filename)
         return df_end
 
@@ -521,8 +531,8 @@ class SampleFeatures:
                 .fillna(0))
         df_ocf.set_index('region_id', inplace=True)
         print("df_ocf:", df_ocf.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_ocf.to_csv(filename)
         return df_ocf
     
@@ -563,8 +573,8 @@ class SampleFeatures:
         df_ifs = self.df_region_ids.merge(df_ifs[["region_id", "IFS"]], on="region_id", how="left").fillna(0)
         df_ifs.set_index('region_id', inplace=True)
         print('df_ifs:', df_ifs.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_ifs.to_csv(filename)
         return df_ifs
     
@@ -620,8 +630,8 @@ class SampleFeatures:
         df_wps = self.df_region_ids.merge(df_wps, on="region_id", how="left").set_index('region_id')
         df_wps["wps"] = df_wps["wps"].fillna(0)
         print("df_wps:", df_wps.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_wps.to_csv(filename)
         return df_wps
 
@@ -687,8 +697,8 @@ class SampleFeatures:
         df_wps["wps"] = df_wps["wps"].fillna(0)
         
         print("df_wps:", df_wps.shape)
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_wps.to_csv(filename)
         return df_wps
         
@@ -758,8 +768,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_edm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
-            print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
+            print(f"feature:{featurename} sample:{self.sample_id} path:{filepath}")
+            print(f"parent_dir:{os.path.dirname(filepath) or '.'} exists:{os.path.isdir(os.path.dirname(filepath) or '.')}")
             df_edm.to_csv(filepath)
             return df_edm
         # get end positions
@@ -805,8 +815,8 @@ class SampleFeatures:
         df_edm = df_edm.reindex(chrom_order, fill_value=0)
         
         print(f"df_edm: {df_edm.shape}")
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filepath}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filepath) or '.'} exists={os.path.isdir(os.path.dirname(filepath) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filepath}")
+        print(f"parent_dir:{os.path.dirname(filepath) or '.'} exists:{os.path.isdir(os.path.dirname(filepath) or '.')}")
         df_edm.to_csv(filepath)
         return df_edm
     
@@ -830,8 +840,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+            print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+            print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
             df_poem.to_csv(filename)
             return df_poem
         # get end positions
@@ -867,77 +877,15 @@ class SampleFeatures:
         df_poem = df_poem.reindex(chrom_order, fill_value=0)
         
         print(f"df_poem: {df_poem.shape}")
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_poem.to_csv(filename)
         return df_poem
 
-    def get_prem(self):
-        """
-        get pre-end 4mer motif, 4 bases before frag_end, reverse complemented
-        """
-        featurename = 'prem'
-        if self._use_mapq_filter("prem"):
-            featurename = f"prem_mapq{self.mapq_filter}"
-        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
-        if self._use_saved_file(filename, featurename):
-            print(f"file already exists {self.sample_id}")
-            df = pd.read_csv(filename, index_col=0)
-            return df
-
-        print(f"calculating {featurename}")
-        frags = self._filtered(self.frag_centroids_openchrom_intersect, "prem")
-        if len(frags) == 0:
-            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
-            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
-            chrom_order = [f"chr{i}" for i in range(1, 23)]
-            df_prem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
-            df_prem.to_csv(filename)
-            return df_prem
-        # get end positions
-        ends_end = frags[["f_chrom", "f_end"]].copy()
-        ends_end = ends_end.rename(columns={"f_end": "pos"})
-
-        # get motifs 4 bp before the upstream edm, reverse complemented
-        prem_end = (
-            ends_end
-            .groupby("f_chrom")
-            .apply(lambda df: self._get_motif(df, offset=-8, rev_complement=True))
-            .rename("motif")
-            .reset_index()
-            .drop(columns=["level_1"])
-        )
-
-        # count and convert to proportions
-        motif_counts = (
-            prem_end
-            .groupby(["f_chrom", "motif"])
-            .size()
-            .unstack(fill_value=0)
-        )
-        print(f"motif_counts: {motif_counts.shape}")
-
-        # have to reindex to include all motifs
-        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
-        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
-
-        df_prem = motif_counts.div(motif_counts.sum(axis=1), axis=0)
-
-        # Reorder to chr1-chr22
-        chrom_order = [f"chr{i}" for i in range(1, 23)]
-        df_prem = df_prem.reindex(chrom_order, fill_value=0)
-
-        print(f"df_prem: {df_prem.shape}")
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
-        df_prem.to_csv(filename)
-        return df_prem
     
     def get_iedm(self):
         """
-        get combined poem and prem motif, 4 bases after frag_start and 4 bases before frag_end (reverse complemented)
+        get inner offset motifs, bases 4-8 after frag_start and reverse complemented bases 4-8 before frag_end
         """
         featurename = 'iedm'
         if self._use_mapq_filter("iedm"):
@@ -955,8 +903,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_poem = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+            print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+            print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
             df_poem.to_csv(filename)
             return df_poem
         # get end positions
@@ -992,17 +940,15 @@ class SampleFeatures:
         df_iedm = df_iedm.reindex(chrom_order, fill_value=0)
         
         print(f"df_iedm: {df_iedm.shape}")
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_iedm.to_csv(filename)
         return df_iedm
     
     
     def get_eedm(self):
         """
-        get combined external pre/post-end motif:
-        - external pre-end: 4 bases before fragment start [f_start-4, f_start), reverse complemented
-        - external post-end: 4 bases after fragment end [f_end, f_end+4), not reverse complemented
+        get external flanking motifs, 4 bases before frag_start and reverse complemented 4 bases after frag_end
         """
         featurename = 'eedm'
         if self._use_mapq_filter("eedm"):
@@ -1021,8 +967,8 @@ class SampleFeatures:
             all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
             chrom_order = [f"chr{i}" for i in range(1, 23)]
             df_eedm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
-            print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-            print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+            print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+            print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
             df_eedm.to_csv(filename)
             return df_eedm
         # get end positions
@@ -1057,10 +1003,167 @@ class SampleFeatures:
         df_eedm = df_eedm.reindex(chrom_order, fill_value=0)
         
         print(f"df_eedm: {df_eedm.shape}")
-        print(f"[debug-save] feature={featurename} sample={self.sample_id} path={filename}")
-        print(f"[debug-save] parent_dir={os.path.dirname(filename) or '.'} exists={os.path.isdir(os.path.dirname(filename) or '.')}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
         df_eedm.to_csv(filename)
         return df_eedm
+
+    def get_eoedm(self):
+        """
+        get external offset flanking motifs: bases 4-8 before frag_start and reverse complemented bases 4-8 after frag_end
+        """
+        featurename = 'eoedm'
+        if self._use_mapq_filter("eoedm"):
+            featurename = f"eoedm_mapq{self.mapq_filter}"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+
+        print(f"calculating {featurename}")
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "eoedm")
+        if len(frags) == 0:
+            print(f"Warning - No fragments after MAPQ filtering for {featurename}")
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            df_eoedm = pd.DataFrame(0, index=chrom_order, columns=all_motifs)
+            print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+            print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
+            df_eoedm.to_csv(filename)
+            return df_eoedm
+        # get end positions
+        ends_start = frags[["f_chrom", "f_start"]].copy()
+        ends_start = ends_start.rename(columns={"f_start": "pos"})
+        ends_end = frags[["f_chrom", "f_end"]].copy()
+        ends_end = ends_end.rename(columns={"f_end": "pos"})
+
+        ext_pre = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-8, rev_complement=False)
+        )
+        ext_post = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=4, rev_complement=True)
+        )
+
+        # count and convert to proportions
+        motif_counts = (
+            pd.concat([ext_pre, ext_post])
+            .groupby(level=0)
+            .value_counts()
+            .unstack(fill_value=0)
+        )
+        print(f"motif_counts: {motif_counts.shape}")
+        # have to reindex to include all motifs
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        motif_counts = motif_counts.reindex(columns=all_motifs, fill_value=0)
+
+        df_eoedm = motif_counts.div(motif_counts.sum(axis=1), axis=0)
+        
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_eoedm = df_eoedm.reindex(chrom_order, fill_value=0)
+        
+        print(f"df_eoedm: {df_eoedm.shape}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
+        df_eoedm.to_csv(filename)
+        return df_eoedm
+
+    def get_cposedm(self):
+        """
+        get complete set of position aware end motifs, 4-mer motifs at positions -8, -4, 0, +4 relative to frag start and end with appropriate reverse complementing
+        dimensions: 22 autosomes x 256 motifs x 4 positions x 2 (upstream/downstream) = 22 x 2048
+        """
+        featurename = 'cposedm'
+        if self._use_mapq_filter("cposedm"):
+            featurename = f"cposedm_mapq{self.mapq_filter}"
+        filename = f"{self.features_path}/{featurename}/{self.sample_id}_{featurename}.csv"
+        if self._use_saved_file(filename, featurename):
+            print(f"file already exists {self.sample_id}")
+            df = pd.read_csv(filename, index_col=0)
+            return df
+
+        print(f"calculating {featurename}")
+
+        frags = self._filtered(self.frag_centroids_openchrom_intersect, "cposedm")
+        if len(frags) == 0:
+            all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+            chrom_order = [f"chr{i}" for i in range(1, 23)]
+            pos_names = ["extou", "extu", "intu", "intou", "extd", "extod", "intd", "intod"]
+            cols = [f"{pos}_{m}" for pos in pos_names for m in all_motifs]
+            df_cposedm = pd.DataFrame(0, index=chrom_order, columns=cols)
+            df_cposedm.to_csv(filename)
+            return df_cposedm
+        # get end positions
+        ends_start = frags[["f_chrom", "f_start"]].copy()
+        ends_start = ends_start.rename(columns={"f_start": "pos"})
+        ends_end = frags[["f_chrom", "f_end"]].copy()
+        ends_end = ends_end.rename(columns={"f_end": "pos"})
+
+        ext_offset_u = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-8, rev_complement=False)
+        )
+        ext_u = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-4, rev_complement=False)
+        )
+        int_offset_u = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=4, rev_complement=False)
+        )
+        int_u = ends_start.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=0, rev_complement=False)
+        )
+        ext_d = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=0, rev_complement=True)
+        )
+        ext_offset_d = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=4, rev_complement=True)
+        )
+        int_offset_d = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-8, rev_complement=True)
+        )
+        int_d = ends_end.groupby("f_chrom").apply(
+            lambda df: self._get_motif(df, offset=-4, rev_complement=True)
+        )
+        # count and convert to proportions
+        position_motifs = {
+            "extou": ext_offset_u,
+            "extu": ext_u,
+            "intu": int_u,
+            "intou": int_offset_u,
+            "extd": ext_d,
+            "extod": ext_offset_d,
+            "intd": int_d,
+            "intod": int_offset_d,
+        }
+
+        all_motifs = [''.join(p) for p in itertools.product('ACGT', repeat=4)]
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        dfs = []
+
+        for pos_name, motif_series in position_motifs.items():
+            counts = (motif_series
+                    .groupby(level=0)
+                    .value_counts()
+                    .unstack(fill_value=0))
+            counts = counts.reindex(columns=all_motifs, fill_value=0)
+            props = counts.div(counts.sum(axis=1), axis=0).fillna(0)
+            props.columns = [f"{pos_name}_{m}" for m in all_motifs]  # prefix with position
+            props = props.reindex(chrom_order, fill_value=0)
+            dfs.append(props)
+
+        df_cposedm = pd.concat(dfs, axis=1)
+                
+        # Reorder to chr1-chr22
+        chrom_order = [f"chr{i}" for i in range(1, 23)]
+        df_cposedm = df_cposedm.reindex(chrom_order, fill_value=0)
+        
+        print(f"df_cposedm: {df_cposedm.shape}")
+        print(f"feature:{featurename} sample:{self.sample_id} path:{filename}")
+        print(f"parent_dir:{os.path.dirname(filename) or '.'} exists:{os.path.isdir(os.path.dirname(filename) or '.')}")
+        df_cposedm.to_csv(filename)
+        return df_cposedm
+
     
 
     
@@ -1089,9 +1192,9 @@ if __name__ == "__main__":
     rerun = True
     if len(sys.argv) >= 8:
         rerun_arg = sys.argv[7].strip().lower()
-        if rerun_arg in ['true', '1', 'yes', 'y']:
+        if rerun_arg == 'true':
             rerun = True
-        elif rerun_arg in ['false', '0', 'no', 'n']:
+        elif rerun_arg == 'false':
             rerun = False
         else:
             print(f"Invalid rerun value: {sys.argv[7]}. Use true/false.")

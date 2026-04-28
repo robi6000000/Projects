@@ -1,0 +1,4 @@
+command to run 10x10 cross-validation on cristiano , using linear svm with gc correction, pca with 150 components, mapq30
+used features are length, edm, iedm, eedm, eoedm, cposedm, fsd, fsr, pfe, ifs, ocf, coverage, ends and wps
+
+sbatch scripts/generalized_modelling/gen_svm_feature_light.sbatch cv ./data/matrix linear true True 150 10 30

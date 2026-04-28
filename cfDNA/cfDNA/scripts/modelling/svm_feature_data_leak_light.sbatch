@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=cfdna_svm
-#SBATCH --output=logs/svm_%x_%j.out
-#SBATCH --error=logs/svm_%x_%j.err
+#SBATCH --output=logs/%x_%A_%a.out
+#SBATCH --error=logs/%x_%A_%a.err
 #SBATCH --time=24:00:00
 #SBATCH --mem=24G
 #SBATCH --array=0-10%4

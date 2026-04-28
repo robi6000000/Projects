@@ -1,7 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=recover_ends
-#SBATCH --output=logs/%x_%j.out
-#SBATCH --error=logs/%x_%j.err
+#SBATCH --job-name=cfdna_svm
+#SBATCH --output=logs/svm_%x_%j.out
+#SBATCH --error=logs/svm_%x_%j.err
+#SBATCH --time=24:00:00
 #SBATCH --mem=24G
 
 echo "Single-feature generalized SVM run (cv/train/test)"
@@ -15,9 +16,8 @@ cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 #   $5 GC_CORRECTION (true|false)
 #   $6 PCA (true|false)
 #   $7 PCA_COMPONENTS
-#   $8 CV_REPEATS
-#   $9 MAPQ_FILTER
-#   $10 RUN_TAG
+#   $8 CV_REPEATS (optional, default 10)
+#   $9 MAPQ_FILTER (optional, default None)
 OPTION=$1
 MATRIX_FOLDER=$2
 FEATURE=$3
@@ -25,12 +25,11 @@ KERNEL=$4
 GC_CORRECTION=$5
 PCA=$6
 PCA_COMPONENTS=$7
-CV_REPEATS=$8
-MAPQ_FILTER=$9
-RUN_TAG=${10}
+CV_REPEATS=${8:-10}
+MAPQ_FILTER=${9:-None}
 
 MATRIX=$MATRIX_FOLDER/by_feature/matrix_${FEATURE}.csv
-if [[ "${MAPQ_FILTER,,}" != "none" && "$MAPQ_FILTER" != "0" ]]; then
+if [ "$MAPQ_FILTER" != "None" ]; then
     MATRIX=$MATRIX_FOLDER/by_feature/matrix_${FEATURE}_mapq${MAPQ_FILTER}.csv
 fi
 GC=data/processing/gc_content_per_region.csv
@@ -43,4 +42,4 @@ conda activate cfdna
 export PYTHONWARNINGS="once:Mean of empty slice:RuntimeWarning,once:Degrees of freedom <= 0 for slice.:RuntimeWarning"
 python -u scripts/generalized_modelling/gen_svm_feature.py $OPTION $MATRIX $MATRIX_FOLDER $GC \
                                                              $FEATURE $KERNEL $GC_CORRECTION \
-                                                             $PCA $PCA_COMPONENTS $CV_REPEATS $MAPQ_FILTER $RUN_TAG
+                                                             $PCA $PCA_COMPONENTS $CV_REPEATS $MAPQ_FILTER

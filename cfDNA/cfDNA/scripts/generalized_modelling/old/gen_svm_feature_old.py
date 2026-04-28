@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from modules.gen_cfdna_model import CFDNAModel
 
-GC_CORRECT_FEATURES = ['pfe', 'coverage', 'ends', 'ocf', 'ifs', 'wps']
+GC_CORRECT_FEATURES = ['pfe', 'fsr', 'coverage', 'ends', 'ocf', 'ifs', 'wps']
 
 if __name__ == "__main__":
     if len(sys.argv) < 9:
@@ -29,10 +29,6 @@ if __name__ == "__main__":
     pca_components = float(sys.argv[9]) if len(sys.argv) >= 10 else 0.95
     cv_repeats = int(sys.argv[10]) if len(sys.argv) >= 11 else 10
     mapq_filter = sys.argv[11] if len(sys.argv) >= 12 else 'None'
-    # if 0 or None or none, treat as no filter
-    if str(mapq_filter).lower() in ['0', 'none']:
-        mapq_filter = None
-    run_tag = sys.argv[12] if len(sys.argv) >= 13 else None
 
     name = f"svm_{kernel}"
     if pca:
@@ -43,12 +39,6 @@ if __name__ == "__main__":
         name += f"_cv{cv_repeats}"
     if str(mapq_filter).lower() != 'none':
         name += f"_mapq{mapq_filter}"
-    if run_tag:
-        name += f"_{run_tag}"
-
-    if gc_correction and feature not in GC_CORRECT_FEATURES:
-        print(f"Warning: gc_correction=True but '{feature}' is not in GC_CORRECT_FEATURES {GC_CORRECT_FEATURES}. Disabling GC correction.")
-        gc_correction = False
 
     base_output_dir = os.path.join(parent_matrix_path, "svm_by_feature", name)
     cv_dir = os.path.join(base_output_dir, "cv")
@@ -84,9 +74,9 @@ if __name__ == "__main__":
     del mx
     gc.collect()
 
-    if option in ('cv', 'cv_old'):
+    if option == 'cv':
         print(f"Cross-validating SVM for {feature}")
-        results = model.cv_svm_old() if option == 'cv_old' else model.cv_svm()
+        results = model.cv_svm()
         output = pd.DataFrame({
             'sample_id': results['sample_ids'],
             'probability': results['probabilities'],

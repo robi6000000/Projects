@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=edm_build
-#SBATCH --output=logs/edm_build_%j.out
-#SBATCH --error=logs/edm_build_%j.err
+#SBATCH --job-name=cposedm_build
+#SBATCH --output=logs/cposedm_build_%j.out
+#SBATCH --error=logs/cposedm_build_%j.err
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=1
 

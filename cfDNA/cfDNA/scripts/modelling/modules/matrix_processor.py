@@ -40,15 +40,18 @@ class MatrixProcessor:
     def GC_correction(self):
         """
         Applies gc correction using lowess regression with a span of 0.75.
-        Has to be called on standardized matrix. 
+        Has to be called on standardized matrix.
+        Uses delta-based interpolation to skip redundant evaluations.
         """
         gc_content = self.gc_content['gc_content'].values
+        gc_range = gc_content.max() - gc_content.min()
+        delta = gc_range / 200.0 if len(gc_content) > 5000 else 0.0
         new_rows = []
         self.lowess_fitted_ = {}
         
         for sample in self.sample_ids:
             coverage = self.matrix.loc[sample].values
-            lowess_smoothed = lowess(coverage, gc_content, frac=0.75)
+            lowess_smoothed = lowess(coverage, gc_content, frac=0.75, delta=delta)
             lowess_fitted = np.interp(gc_content, lowess_smoothed[:, 0], lowess_smoothed[:, 1])
             self.lowess_fitted_[sample] = lowess_fitted
             corrected_coverage = coverage - lowess_fitted

@@ -2,7 +2,7 @@
 #SBATCH --job-name=features
 #SBATCH --output=logs/features_%j_%A_%a.out
 #SBATCH --error=logs/features_%j_%A_%a.err
-#SBATCH --array=1-38%20
+#SBATCH --array=1-459%20
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=1
 
