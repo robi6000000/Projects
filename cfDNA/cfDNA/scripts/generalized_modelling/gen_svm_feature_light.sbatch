@@ -3,7 +3,7 @@
 #SBATCH --output=logs/%x_%A_%a.out
 #SBATCH --error=logs/%x_%A_%a.err
 #SBATCH --mem=24G
-#SBATCH --array=0-11%5
+#SBATCH --array=0-12%5
 
 echo "Modelling SVM on lighter features using 24G"
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA

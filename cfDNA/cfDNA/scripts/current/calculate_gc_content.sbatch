@@ -9,7 +9,6 @@
 set -euo pipefail
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 
-
 # Edit these paths as needed
 REGIONS=./data/processing/openchrom_with_id.bed
 OUTPUT=./data/processing/gc_content_per_region.csv

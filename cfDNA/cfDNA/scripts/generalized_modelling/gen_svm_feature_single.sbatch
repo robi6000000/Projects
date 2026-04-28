@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=recover_ends
+#SBATCH --job-name=sig_wps
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 #SBATCH --mem=24G
