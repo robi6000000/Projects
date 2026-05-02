@@ -31,6 +31,18 @@ def build_feature_matrix(feature_name, mapq_filter=None, features_folder=feature
         print(f"No files - {output_name}")
         return
     
+    metadata = pd.read_csv(metadata_path)
+    valid_ids = set(metadata['sample_id'].astype(str))
+
+    feature_files = [
+        f for f in feature_files
+        if os.path.basename(f).replace(f"_{output_name}.csv", "") in valid_ids
+    ]
+    print(f"After metadata filter: {len(feature_files)} files")
+
+    if len(feature_files) == 0:
+        print(f"No files after filtering - {output_name}")
+        return
     # load first file to get structure (matrix vs vector feature)
     first_file = feature_files[0]
     
@@ -71,7 +83,6 @@ def build_feature_matrix(feature_name, mapq_filter=None, features_folder=feature
     
     # Add metadata
     print("Metadata")
-    metadata = pd.read_csv(metadata_path)
     matrix = matrix.merge(
         metadata[['sample_id', 'disease', 'dataset', 'material', 'stage', 'cancer_true']],
         on='sample_id',

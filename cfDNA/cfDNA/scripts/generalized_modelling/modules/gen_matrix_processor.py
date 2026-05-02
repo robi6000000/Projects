@@ -6,13 +6,11 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 class MatrixProcessor:
     metadata_cols = ['disease', 'dataset', 'material', 'stage', 'cancer_true']
 
-    def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame, X_train: pd.DataFrame = None):
+    def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame):
         """
         mx: DataFrame containing the feature matrix with samples as rows and region features as columns
         gc_content: DataFrame containing GC content for each region feature
-        X_train: DataFrame containing the training feature matrix for standardization
         """
-        
         self.gc_content = gc_content
         self.matrix = mx
         self.sample_ids = self.matrix.index.tolist()
@@ -39,7 +37,7 @@ class MatrixProcessor:
     
     def GC_correction(self):
         """
-        Applies gc correction using lowess regression with a span of 0.75 and delta to speed up computation.
+        Applies gc correction using lowess regression with a span of 0.75.
         Has to be called on standardized matrix. 
         """
         gc_content = self.gc_content['gc_content'].values
@@ -56,28 +54,4 @@ class MatrixProcessor:
         self.matrix = pd.DataFrame(new_rows, index=self.sample_ids, columns=self.features)
         return self.matrix
     
-    def transform_gc(self, X_new: pd.DataFrame):
-        """Transform new data using stored LOWESS fits"""
-        # gc_content = self.gc_content['gc_content'].values
-        new_rows = []
-        
-        for sample in X_new.index:
-            coverage = X_new.loc[sample].values
-            # use mean lowess fit from training data
-            mean_fitted = np.mean(list(self.lowess_fitted_.values()), axis=0)
-            corrected_coverage = coverage - mean_fitted
-            new_rows.append(corrected_coverage)
-        
-        return pd.DataFrame(new_rows, index=X_new.index, columns=X_new.columns)
-    
-    # def PCA(self):
-    #     pca = PCA(n_components=0.95)  
-    #     pca_result = pca.fit_transform(self.matrix)
-    #     pca_df = pd.DataFrame(pca_result, index=self.sample_ids)
-    #     return pca_df
-    
-    def process(self):
-        self.standardize()
-        self.GC_correction()
-        return self.matrix
 

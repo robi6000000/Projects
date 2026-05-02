@@ -48,8 +48,8 @@ class CFDNAModel:
 
     def _build_estimator_old(self):
         if self.kernel is None:
-            return svm.SVC(probability=True)
-        return svm.SVC(probability=True, kernel=self.kernel)
+            return svm.SVC(probability=True, random_state=1)
+        return svm.SVC(probability=True, kernel=self.kernel, random_state=1)
 
     def _build_estimator(self):
         if self.kernel is None:
@@ -132,14 +132,14 @@ class CFDNAModel:
             X_train_scaled, X_test_scaled = self._standardize_arrays(X_train, X_test)
 
             if self.gc_correction:
-                X_train_scaled, gc_state = self._fit_gc_correction(X_train_scaled)
-                X_test_scaled = self._apply_gc_state(X_test_scaled, gc_state)
+                X_train_scaled = self._gc_correct(pd.DataFrame(X_train_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
+                X_test_scaled = self._gc_correct(pd.DataFrame(X_test_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
 
             X_train_scaled = np.nan_to_num(X_train_scaled, copy=True).astype(np.float32, copy=False)
             X_test_scaled = np.nan_to_num(X_test_scaled, copy=True).astype(np.float32, copy=False)
 
             if self.pca:
-                pca = PCA(n_components=self.pca_components)
+                pca = PCA(n_components=self.pca_components, svd_solver='randomized', random_state=1)
                 X_train_scaled = pca.fit_transform(X_train_scaled)
                 X_test_scaled = pca.transform(X_test_scaled)
             model = self._build_estimator_old()
@@ -188,14 +188,14 @@ class CFDNAModel:
             X_train_scaled, X_test_scaled = self._standardize_arrays(X_train, X_test)
 
             if self.gc_correction:
-                X_train_scaled, gc_state = self._fit_gc_correction(X_train_scaled)
-                X_test_scaled = self._apply_gc_state(X_test_scaled, gc_state)
+                X_train_scaled = self._gc_correct(pd.DataFrame(X_train_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
+                X_test_scaled = self._gc_correct(pd.DataFrame(X_test_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
 
             X_train_scaled = np.nan_to_num(X_train_scaled, copy=True).astype(np.float32, copy=False)
             X_test_scaled = np.nan_to_num(X_test_scaled, copy=True).astype(np.float32, copy=False)
 
             if self.pca:
-                pca = PCA(n_components=self.pca_components)
+                pca = PCA(n_components=self.pca_components, svd_solver='randomized', random_state=1)
                 X_train_scaled = pca.fit_transform(X_train_scaled)
                 X_test_scaled = pca.transform(X_test_scaled)
             model = self._build_estimator()
@@ -219,45 +219,6 @@ class CFDNAModel:
             'probabilities': probabilities,
             'sample_ids': self.sample_ids,
             'labels': y
-        }
-
-    def fit_svm_old(self):
-        """Fit one SVM on the full dataset and return a pickle model.
-        Uses probability=True (Platt scaling) — slower but stored model supports predict_proba."""
-        X_values = self.matrix.to_numpy(dtype=np.float32, copy=False)
-        y = self.labels
-
-        X_train_scaled, scaler_state = self._fit_standardizer(X_values.copy())
-
-        gc_state = None
-        if self.gc_correction:
-            X_train_scaled, gc_state = self._fit_gc_correction(X_train_scaled)
-
-        X_train_scaled = np.nan_to_num(X_train_scaled, copy=True).astype(np.float32, copy=False)
-
-        pca_model = None
-        if self.pca:
-            pca_model = PCA(n_components=self.pca_components)
-            X_train_scaled = pca_model.fit_transform(X_train_scaled)
-
-        model = self._build_estimator_old()
-        model.fit(X_train_scaled, y)
-
-        return {
-            'model': model,
-            'feature': self.feature,
-            'kernel': self.kernel,
-            'gc_correction': self.gc_correction,
-            'pca': self.pca,
-            'pca_components': self.pca_components,
-            'feature_columns': self.features,
-            'sample_ids': self.sample_ids,
-            'labels': y,
-            'scaler': scaler_state,
-            'gc_state': gc_state,
-            'pca_model': pca_model,
-            'metadata_cols': self.present_metadata_cols,
-            'classes_': model.classes_.tolist(),
         }
 
     def fit_svm(self):
