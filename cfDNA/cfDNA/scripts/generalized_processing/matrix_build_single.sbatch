@@ -1,9 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=cposedm_build
-#SBATCH --output=logs/cposedm_build_%j.out
-#SBATCH --error=logs/cposedm_build_%j.err
-#SBATCH --mem=32G
-#SBATCH --cpus-per-task=1
+#SBATCH --job-name=fsr45_build
+#SBATCH --output=logs/fsr45_build_%j.out
+#SBATCH --error=logs/fsr45_build_%j.err
+#SBATCH --mem=64G
 
 set -euo pipefail
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA

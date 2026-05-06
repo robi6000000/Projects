@@ -106,7 +106,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         # Args: feature mapq_filter features_folder matrix_folder
         feature = sys.argv[1]
-        mapq_filter = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2].lower() != "none" else None
+        mapq_filter = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2].lower() not in ["none", "0"] else None
         features_folder = sys.argv[3] if len(sys.argv) > 3 else features_folder
         matrix_folder = sys.argv[4] if len(sys.argv) > 4 else matrix_folder
         metadata_path = sys.argv[5] if len(sys.argv) > 5 else metadata_path
