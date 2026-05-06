@@ -3,9 +3,6 @@
 /cfDNA/cfDNA/log/
 /cfDNA/cfDNA/logs/
 cfDNA/logs/
-cd /data/projects/liquid_biopsy/Projects
-rm -rf cfDNA/cfDNA/finaledb_workflow/.git.backup
-git status --short/__pycache__/
 *.pyc
 /cfDNA/.snakemake/
 /cfDNA/trimmomatic/
