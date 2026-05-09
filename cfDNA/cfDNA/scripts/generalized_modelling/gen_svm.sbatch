@@ -4,7 +4,7 @@
 #SBATCH --error=logs/%x_%A_%a.err
 #SBATCH --mem=24G
 
-#   $1 OPTION (cv, cv_old, train, test)
+#   $1 OPTION (cv, train)
 #   $2 MATRIX_FOLDER
 #   $3 KERNEL
 #   $4 GC_CORRECTION (true/false)
