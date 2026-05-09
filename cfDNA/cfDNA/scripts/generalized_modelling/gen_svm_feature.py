@@ -13,7 +13,8 @@ if __name__ == "__main__":
         print(
             "Usage: python scripts/generalized_modelling/gen_svm_feature.py "
             "[option:cv/train/test] [matrix_path] [parent_matrix_path] [gc_path] [feature] [kernel] "
-            "[gc_correction: bool] [pca: bool] [pca_components] [cv_repeats] [mapq_filter] [model_path] [test_output_path]"
+            "[gc_correction: bool] [pca: bool] [pca_components] [cv_repeats] [mapq_filter] "
+            "[run_tag] [model_path] [test_output_path]"
         )
         sys.exit(1)
 
@@ -32,7 +33,44 @@ if __name__ == "__main__":
     # if 0 or None or none, treat as no filter
     if str(mapq_filter).lower() in ['0', 'none']:
         mapq_filter = None
-    run_tag = sys.argv[12] if len(sys.argv) >= 13 else None
+
+    optional_args = sys.argv[12:]
+
+    def _normalize_optional(value):
+        if value is None:
+            return None
+        value = str(value)
+        if value.strip() == '' or value.lower() == 'none':
+            return None
+        return value
+
+    run_tag = None
+    model_path_arg = None
+    test_output_path_arg = None
+
+    if len(optional_args) == 1:
+        arg0 = _normalize_optional(optional_args[0])
+        # Backward compatible: single trailing arg was historically run_tag,
+        # but allow explicit model path as well.
+        if arg0 and (os.path.sep in arg0 or arg0.endswith('.pkl')):
+            model_path_arg = arg0
+        else:
+            run_tag = arg0
+    elif len(optional_args) == 2:
+        arg0 = _normalize_optional(optional_args[0])
+        arg1 = _normalize_optional(optional_args[1])
+        # Backward compatible with the older documented contract where the
+        # last two args were model_path and test_output_path.
+        if arg0 and (os.path.sep in arg0 or arg0.endswith('.pkl')):
+            model_path_arg = arg0
+            test_output_path_arg = arg1
+        else:
+            run_tag = arg0
+            model_path_arg = arg1
+    elif len(optional_args) >= 3:
+        run_tag = _normalize_optional(optional_args[0])
+        model_path_arg = _normalize_optional(optional_args[1])
+        test_output_path_arg = _normalize_optional(optional_args[2])
 
     name = f"svm_{kernel}"
     if pca:
@@ -58,9 +96,8 @@ if __name__ == "__main__":
     os.makedirs(model_dir, exist_ok=True)
     os.makedirs(test_dir, exist_ok=True)
 
-    model_path = sys.argv[12] if len(sys.argv) >= 13 else os.path.join(model_dir, f"{name}_{feature}.pkl")
-    test_output_path = sys.argv[13] if len(sys.argv) >= 14 else os.path.join(test_dir, f"{name}_{feature}_probs.csv")
-
+    model_path = model_path_arg or os.path.join(model_dir, f"{name}_{feature}.pkl")
+    test_output_path = test_output_path_arg or os.path.join(test_dir, f"{name}_{feature}_probs.csv")
 
     print(f"Config: option={option}, feature={feature}, kernel={kernel}, gc_correction={gc_correction}, pca={pca}, pca_components={pca_components}, cv_repeats={cv_repeats}, mapq_filter={mapq_filter}")
 
@@ -86,7 +123,7 @@ if __name__ == "__main__":
 
     if option in ('cv', 'cv_old'):
         print(f"Cross-validating SVM for {feature}")
-        results = model.cv_svm_old() if option == 'cv_old' else model.cv_svm()
+        results = model.cv_svm()
         output = pd.DataFrame({
             'sample_id': results['sample_ids'],
             'probability': results['probabilities'],
@@ -102,18 +139,11 @@ if __name__ == "__main__":
             pickle.dump(trained_model, f)
         print(f"Trained model saved {model_path}")
     elif option == 'test':
-        print(f"Testing model for {feature}")
+        print(f"Predicting probabilities for {feature}")
         with open(model_path, 'rb') as f:
             trained_model = pickle.load(f)
-        try:
-            output = model.test_model(trained_model)
-            if isinstance(output, pd.DataFrame):
-                output.to_csv(test_output_path, index=False)
-                print(f"Test predictions saved {test_output_path}")
-            else:
-                print("Test method placeholder returned no DataFrame yet.")
-        except NotImplementedError as e:
-            print(str(e))
-            print("No test output written yet.")
+        output = model.predict(trained_model)
+        output.to_csv(test_output_path)
+        print(f"Test predictions saved {test_output_path}")
     else:
         raise ValueError(f"Unknown option: {option}. Use cv, train, or test.")
