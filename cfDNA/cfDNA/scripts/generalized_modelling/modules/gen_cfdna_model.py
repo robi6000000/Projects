@@ -15,7 +15,8 @@ class CFDNAModel:
 
     def __init__(self, mx: pd.DataFrame, gc_content: pd.DataFrame = None,
                  feature: str = None, kernel: str = None, gc_correction: bool = False,
-                 pca: bool = False, pca_components: float = 0.95, cv_repeats: int = 10):
+                 pca: bool = False, pca_components: float = 0.95, cv_repeats: int = 10,
+                 standardize: bool = True):
 
         metadata_mx = mx[[c for c in self.metadata_cols if c in mx.columns]].copy()
         self.present_metadata_cols = metadata_mx.columns.tolist()
@@ -40,6 +41,7 @@ class CFDNAModel:
         self.features = X.columns.tolist()
         self.kernel = kernel
         self.cv_repeats = cv_repeats
+        self.standardize = standardize
 
     def _build_estimator(self):
         if self.kernel is None:
@@ -102,7 +104,10 @@ class CFDNAModel:
             X_test = X_values[test_i].copy()
             y_train = y[train_i]
 
-            X_train_scaled, X_test_scaled = self._standardize_arrays(X_train, X_test)
+            if self.standardize:
+                X_train_scaled, X_test_scaled = self._standardize_arrays(X_train, X_test)
+            else:
+                X_train_scaled, X_test_scaled = X_train, X_test
 
             if self.gc_correction:
                 X_train_scaled = self._gc_correct(pd.DataFrame(X_train_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
@@ -135,7 +140,11 @@ class CFDNAModel:
         X_values = self.matrix.to_numpy(dtype=np.float32, copy=False)
         y = self.labels
 
-        X_scaled, scaler_state = self._fit_standardizer(X_values.copy())
+        if self.standardize:
+            X_scaled, scaler_state = self._fit_standardizer(X_values.copy())
+        else:
+            X_scaled = X_values.copy()
+            scaler_state = None
 
         gc_state = None
         if self.gc_correction:
@@ -172,7 +181,8 @@ class CFDNAModel:
         """Apply a trained model to this instance's matrix and return probabilities."""
         X = self.matrix.to_numpy(dtype=np.float32, copy=False)
         scaler = trained_model['scaler']
-        X = np.nan_to_num((X - scaler['mean']) / scaler['std'], copy=True).astype(np.float32, copy=False)
+        if scaler is not None:
+            X = np.nan_to_num((X - scaler['mean']) / scaler['std'], copy=True).astype(np.float32, copy=False)
 
         if trained_model.get('gc_correction') and trained_model.get('gc_state'):
             X = self._apply_gc_state(X, trained_model['gc_state'])

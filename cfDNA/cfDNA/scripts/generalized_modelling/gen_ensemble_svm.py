@@ -6,11 +6,12 @@ import pandas as pd
 from modules.gen_cfdna_model import CFDNAModel
 
 if __name__ == "__main__":
-    if len(sys.argv) != 9:
+    if len(sys.argv) < 9:
         print(
             "Usage: python scripts/generalized_modelling/gen_ensemble_svm.py "
             "[option: cv/train/test] [meta_matrix_path] [kernel] [cv_repeats] "
-            "[dataset_tag|none] [model_path|none] [test_output_path|none] [run_tag|none]"
+            "[dataset_tag|none] [model_path|none] [test_output_path|none] [run_tag|none] "
+            "[standardize: true/false (optional, default false)]"
         )
         sys.exit(1)
 
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     model_path_arg   = None if sys.argv[6].lower() == 'none' else sys.argv[6]
     output_path_arg  = None if sys.argv[7].lower() == 'none' else sys.argv[7]
     run_tag          = None if sys.argv[8].lower() == 'none' else sys.argv[8]
+    standardize      = sys.argv[9].lower() == 'true' if len(sys.argv) >= 10 else True
 
     # Derive output root: .../svm_by_feature/<config>/meta_matrix/... -> .../svm_by_feature/<config>/
     parent_output_dir = os.path.dirname(os.path.dirname(meta_matrix_path))
@@ -40,14 +42,15 @@ if __name__ == "__main__":
     test_output_path = output_path_arg or os.path.join(test_dir, f"{_test_stem}.csv")
 
     print(f"Config: option={option}, kernel={kernel}, cv_repeats={cv_repeats}, "
-          f"dataset_tag={dataset_tag}, run_tag={run_tag}")
+          f"dataset_tag={dataset_tag}, run_tag={run_tag}, standardize={standardize}")
     print(f"Output dir: {base_output_dir}")
 
     mx = pd.read_csv(meta_matrix_path, index_col=0, low_memory=False)
     print(f"Meta-matrix loaded: shape={mx.shape}")
 
     model = CFDNAModel(mx, gc_content=None, kernel=kernel,
-                       gc_correction=False, pca=False, cv_repeats=cv_repeats)
+                       gc_correction=False, pca=False, cv_repeats=cv_repeats,
+                       standardize=standardize)
     del mx
     gc.collect()
 

@@ -65,3 +65,29 @@ The list of final features that will be used and are actually important to this 
 - length, fsd, fsr, edm, iedm, eedm, eoedm, cposedm, pfe, coverage, ends, ocf, ifs, wps
 
 'poem', 'prem', 'poem_prem', 'ext_poem_prem', and 'wps_compute' are old namings or badly designed features and should be ignored
+
+---
+
+## Thesis Goals and Scope
+
+### Primary contribution
+This thesis reimplements the Zhou et al. 2024 cfDNA fragmentomics pipeline entirely from paper descriptions — no source code or repository was available from the authors. The pipeline covers preprocessing (FinaleDB Snakemake), feature extraction, matrix construction, and SVM modelling. On top of this reimplementation, four new end-motif features were designed and evaluated: iEDM, eEDM, eoEDM, and ocEDM (also called cposedm in some scripts).
+
+### Possible thesis goals (to be confirmed)
+1. **Reproducibility**: Demonstrate that the Zhou et al. feature pipeline can be faithfully reproduced from paper descriptions alone, achieving comparable AUC scores on the Cristiano cohort.
+2. **New feature design**: Evaluate whether the newly designed end-motif features (iedm, eedm, eoedm, ocedm) provide additional discriminative signal beyond EDM.
+3. **Ensemble modelling**: Train a stacking ensemble (per-feature SVM base models → meta-learner trained on OOF predictions) and evaluate its performance vs individual feature models.
+4. **External validation**: Validate the Cristiano-trained ensemble on the internal GenoScan (gs) and PreveLynch (ly) datasets.
+5. **Internal dataset CV**: Perform 10×10 CV and ensemble training on the ly dataset independently; test cross-dataset generalizability (ly → gs).
+
+### Planned modelling workflow
+- **Step 1**: 10×10 CV on Cristiano (459 samples) per feature → OOF predictions → meta-matrix → train ensemble → evaluate
+- **Step 2**: Apply Cristiano-trained ensemble directly to gs (external validation, no retraining — gs is only 38 samples)
+- **Step 3**: 10×10 CV on ly (459 available samples, 230 missing due to FASTQ preprocessing failure) → meta-matrix → train ensemble → test on held-out ly subset (hold out before CV)
+- **Step 4**: Apply ly-trained ensemble to gs as cross-dataset test
+
+### Open question
+Cancer vs healthy control breakdown for gs and ly datasets not yet confirmed — needed to contextualize validation results and assess class balance.
+
+### Hyperparameter config (fixed for all analyses)
+Linear SVM kernel, MAPQ 30 filtering, PCA 150 components, GC correction on. Selected via sequential search on Cristiano with 1×10 CV.
