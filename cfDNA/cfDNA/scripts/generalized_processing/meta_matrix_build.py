@@ -33,6 +33,7 @@ if __name__ == "__main__":
         probs_folder = sys.argv[1]
         output_folder = sys.argv[2]
         metadata_path = sys.argv[3]
+        os.makedirs(output_folder, exist_ok=True)
 
         build_meta_matrix(probs_folder, output_folder, metadata_path)
     else:

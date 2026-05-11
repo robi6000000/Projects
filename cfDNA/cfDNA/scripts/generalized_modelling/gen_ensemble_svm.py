@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     if option == "cv":
         print("Cross-validating ensemble SVM")
-        results = model.cv_svm_old()
+        results = model.cv_svm()
         output = pd.DataFrame({
             "probability": results["probabilities"],
             "label":       results["labels"]
