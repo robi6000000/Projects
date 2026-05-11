@@ -90,7 +90,7 @@ class CFDNAModel:
 
     def cv_svm(self):
         """
-        10x10 repeated stratified CV returning one averaged OOF probability per sample.
+        kx10 repeated stratified CV returning one averaged OOF probability per sample.
         Order within each fold: standardize (train stats) -> GC correct -> PCA -> SVM.
         """
         X_values = self.matrix.to_numpy(dtype=np.float32, copy=False)

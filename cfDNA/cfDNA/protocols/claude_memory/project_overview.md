@@ -61,3 +61,20 @@ Next: same as Cristiano.
 - Cristiano: stage I/II/III/IV available and used in results.ipynb
 - LY: stage column entirely empty — stage AUC not feasible
 - CRC: stage AUC cells added to results.ipynb (cells ad109548, c6d614f6), guarded by os.path.exists
+
+## Thesis visualisation strategy (deadline 2026-05-18, 7 days)
+- **Cristiano-trained models**: show all available features (14 for CV, as many as complete for external test). Primary comparison to Zhou et al.
+- **CRC/LY-trained models**: EDM-feature focus as fallback if med jobs don't finish — restrict to edm, iedm, eedm, eoedm, ocedm (all light features, complete everywhere).
+
+## Visualisation TODO (results.ipynb)
+Done: 01-09 hyperparameter/CV plots, 20-23 ensemble plots, 06b CRC stage AUC, feature correlation heatmap.
+Missing/needed:
+- Score distributions — violin/box plots of predicted probabilities, cancer vs healthy, per feature (Cristiano CV + ensemble)
+- Cross-dataset AUC heatmap — feature × condition summary matrix (high priority, can use EDM features as fallback)
+- External validation ROC + AUC bars for all training configs (cells exist, just need jobs to finish)
+
+## Ensemble (Cristiano)
+- CV AUC: 0.9932 (10×10 CV)
+- CV probs: data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble/cv/cv_probs.csv
+- Model: data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble/models/ensemble.pkl
+- Meta-matrix: data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/meta_matrix.csv
