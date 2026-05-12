@@ -65,21 +65,21 @@ if [ ! -f "./data/source/hg19.genome" ]; then
     wget https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes -O ./data/source/hg19.genome
 fi
 
-# pipe version of processing tss 
-if [ ! -f "./data/source/gencode.v30lift37.annotation.gtf" ]; then
-    wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_30/GRCh37_mapping/gencode.v30lift37.annotation.gtf.gz -O ./data/source/gencode.v30lift37.annotation.gtf.gz
-fi
-if [ ! -f "./data/source/gencode.v30lift37.annotation.gtf" ]; then
-    gunzip ./data/source/gencode.v30lift37.annotation.gtf.gz
-fi
-awk 'BEGIN{OFS="\t"} 
-$3=="transcript" {
-    if ($7 == "+") print $1, $4, $4, ".", ".", $7;
-    else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
-}' ./data/source/gencode.v30lift37.annotation.gtf | \
-awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' > ./data/processing/tss_autosomes.bed
-bedtools slop -i ./data/processing/tss_autosomes.bed -g ./data/source/hg19.genome -l 150 -r 50 -s > ./data/processing/tss_150_50.bed
-bedtools slop -i ./data/processing/tss_autosomes.bed -g ./data/source/hg19.genome -l 1000 -r 1000 -s > ./data/processing/tss_1000_1000.bed
+# TSS processing — not used by current pipeline features, kept for reference
+# if [ ! -f "./data/source/gencode.v30lift37.annotation.gtf.gz" ] && [ ! -f "./data/source/gencode.v30lift37.annotation.gtf" ]; then
+#     wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_30/GRCh37_mapping/gencode.v30lift37.annotation.gtf.gz -O ./data/source/gencode.v30lift37.annotation.gtf.gz
+# fi
+# if [ ! -f "./data/source/gencode.v30lift37.annotation.gtf" ]; then
+#     gunzip ./data/source/gencode.v30lift37.annotation.gtf.gz
+# fi
+# awk 'BEGIN{OFS="\t"}
+# $3=="transcript" {
+#     if ($7 == "+") print $1, $4, $4, ".", ".", $7;
+#     else if ($7 == "-") print $1, $5, $5, ".", ".", $7;
+# }' ./data/source/gencode.v30lift37.annotation.gtf | \
+# awk '$1 ~ /^chr([1-9]|1[0-9]|2[0-2])$/' > ./data/processing/tss_autosomes.bed
+# bedtools slop -i ./data/processing/tss_autosomes.bed -g ./data/source/hg19.genome -l 150 -r 50 -s > ./data/processing/tss_150_50.bed
+# bedtools slop -i ./data/processing/tss_autosomes.bed -g ./data/source/hg19.genome -l 1000 -r 1000 -s > ./data/processing/tss_1000_1000.bed
 
 # for OCF we also need fragment end information intersected with openchrom
 # add a centroid column
@@ -113,10 +113,10 @@ fi
 # get v37 reference genome fasta for finaledbp pipeline:
 # http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz
 echo "Downloading reference genome for finaledb pipeline"
-if [ ! -f "./data/hg19/human_g1k_v37.fasta" ]; then
+if [ ! -f "./data/hg19/human_g1k_v37.fasta.gz" ] && [ ! -f "./data/hg19/human_g1k_v37.fasta" ]; then
     wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz -O ./data/hg19/human_g1k_v37.fasta.gz
 fi
-if [ ! -f "./data/hg19/human_g1k_v37.fasta" ]; then 
+if [ ! -f "./data/hg19/human_g1k_v37.fasta" ]; then
     gunzip ./data/hg19/human_g1k_v37.fasta.gz
 fi
 echo "Reference genome download complete"
