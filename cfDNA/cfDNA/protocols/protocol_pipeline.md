@@ -91,6 +91,26 @@ Produces in `data/processing/`:
 - `wps_openchrom_with_id.bed` — regions extended ±60bp on each side for WPS computation
 - `gc_content_per_region.csv` — GC fraction per open chromatin region
 
+## Step 1b — Generate metadata file (internal datasets only)
+
+`scripts/generalized_processing/generate_metadata_file.py` — scans a `frag/` directory for fragment files and builds the metadata CSV required by Step 2. Only needed for internal cohorts where sample metadata is encoded in the filename; external cohorts (e.g. Cristiano) provide a metadata CSV directly.
+
+Expected fragment file naming: `{dataset}_{disease}_{...optional tokens...}_{material}.GRCh37.frag.bed.gz`
+
+Example: `lycc_Colorectal_LY00123_pl.GRCh37.frag.bed.gz`
+- `dataset` — cohort prefix (e.g. `ly`, `gs`); if last two characters are `cc` or `ca`, the sample is labelled as cancer (`cancer_true=1`)
+- `disease` — second `_`-separated token (e.g. `Colorectal`)
+- `material` — last token; samples where `material != pl` (plasma) are excluded
+
+```bash
+python scripts/generalized_processing/generate_metadata_file.py ly   # produces data/manifest/internal_metadata_ly.csv
+python scripts/generalized_processing/generate_metadata_file.py gs   # produces data/manifest/internal_metadata_gs.csv
+```
+
+Output: `data/manifest/internal_metadata_{ds_name}.csv` with columns: `sample_id`, `disease`, `dataset`, `material`, `frag_path`, `stage` (empty), `cancer_true`.
+
+The `stage` column is left empty and must be filled manually if stage information is available. After generating, verify sample counts and disease labels before proceeding to Step 2.
+
 ## Step 2 — Compute per-sample features
 
 ### a. SLURM array job for feature vector computation
