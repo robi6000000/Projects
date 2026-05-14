@@ -6,7 +6,11 @@ from sklearn.metrics import roc_curve, roc_auc_score
 FEATURE_NAMES = ['length', 'fsd', 'fsr', 'pfe', 'coverage', 'ends', 'ocf',
                  'ifs', 'wps', 'edm', 'iedm', 'eedm', 'eoedm', 'cposedm']
 
-RENAME     = {'cposedm': 'ocedm'}
+RENAME     = {
+    'length': 'Length',
+    'fsd': 'FSD', 'fsr': 'FSR', 'pfe': 'PFE', 'coverage': 'Coverage',
+    'ends': 'Ends', 'ocf': 'OCF', 'ifs': 'IFS', 'wps': 'WPS', 'edm': 'EDM',
+    'iedm': 'iEDM', 'eedm': 'eEDM', 'eoedm': 'eoEDM','cposedm': 'ocEDM'}
 RENAME_INV = {v: k for k, v in RENAME.items()}
 
 ZHOU_SCORES = {
@@ -15,40 +19,40 @@ ZHOU_SCORES = {
     'ifs': 0.9653, 'wps': 0.9658, 'pfe': 0.9579, 'fsr': 0.9441
 }
 
-NEW_FEATURES = {'iedm', 'eedm', 'eoedm', 'ocedm'}
+NEW_FEATURES = {'iEDM', 'eEDM', 'eoEDM', 'ocEDM'}
+
+CANCER_RENAME = {
+    'Colorectal cancer': 'Colorectal',
+    'Lung cancer': 'Lung',
+    'Ovarian cancer': 'Ovarian',
+    'Pancreatic cancer': 'Pancreatic',
+    'Prostate cancer': 'Prostate',
+    'Breast cancer': 'Breast',
+    'Bile duct cancer': 'Bile duct',
+    'Gastric cancer': 'Gastric',
+    'Duodenal cancer': 'Duodenal',
+}
+CANCER_RENAME_INV = {v: k for k, v in CANCER_RENAME.items()}
 
 
 def load_roc_data(directory, feature_names=None, suffix='_probs.csv'):
-    """Load per-feature ROC data. Returns list of dicts with name/fpr/tpr/auc, sorted by AUC desc."""
     if feature_names is None:
         feature_names = FEATURE_NAMES
-    roc_data, missing = [], []
+    roc_data = []
+    missing_f = [] 
     for feature in feature_names:
         path = os.path.join(directory, f"{feature}{suffix}")
         if not os.path.exists(path):
-            missing.append(feature)
+            missing_f.append(feature)
             continue
         df = pd.read_csv(path)[['probability', 'label']]
-        fpr, tpr, _ = roc_curve(df['label'], df['probability'])
+        fpr, tpr, thresholds = roc_curve(df['label'], df['probability'])
         auc = roc_auc_score(df['label'], df['probability'])
         roc_data.append({'name': RENAME.get(feature, feature), 'fpr': fpr, 'tpr': tpr, 'auc': auc})
     roc_data.sort(key=lambda x: x['auc'], reverse=True)
-    if missing:
-        print(f"Missing: {missing}")
+    if missing_f:
+        print(f"Missing: {missing_f}")
     return roc_data
-
-
-def load_probs(directory, feature_names=None, suffix='_cv_probs.csv'):
-    """Load raw probability DataFrames per feature. Returns dict: feature -> DataFrame."""
-    if feature_names is None:
-        feature_names = FEATURE_NAMES
-    probs = {}
-    for feature in feature_names:
-        path = os.path.join(directory, f"{feature}{suffix}")
-        if not os.path.exists(path):
-            continue
-        probs[feature] = pd.read_csv(path)
-    return probs
 
 
 def bootstrap_auc_ci(y_true, y_prob, n=1000, seed=42):

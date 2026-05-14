@@ -1,7 +1,7 @@
-feature,linear_pca150_gc_1x10,zhou_et_al
-pfe,0.9502,0.9579
-coverage,0.916,0.9638
-ends,0.939,0.9639
-ocf,0.9143,0.9467
-ifs,0.9404,0.9653
-wps,0.9555,0.9658
+feature,linear_pca150_gc_1x10
+pfe,0.9502
+coverage,0.916
+ends,0.939
+ocf,0.9143
+ifs,0.9404
+wps,0.9555
