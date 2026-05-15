@@ -70,6 +70,21 @@ class CFDNAModel:
         gc_aligned = self.gc_content.loc[region_ids].reset_index(drop=True)
         return MatrixProcessor(X, gc_aligned).GC_correction()
 
+    def _fit_gc_correction(self, X_train_scaled: np.ndarray):
+        X_train_df = pd.DataFrame(X_train_scaled, columns=self.features)
+        region_ids = range(X_train_df.shape[1])
+        gc_aligned = self.gc_content.loc[region_ids].reset_index(drop=True)
+        processor = MatrixProcessor(X_train_df, gc_aligned)
+        corrected_df = processor.GC_correction()
+        gc_state = {
+            'mean_fitted': np.mean(list(processor.lowess_fitted_.values()), axis=0).astype(np.float32),
+        }
+        return corrected_df.to_numpy(dtype=np.float32, copy=True), gc_state
+
+    @staticmethod
+    def _apply_gc_state(X_scaled: np.ndarray, gc_state: dict) -> np.ndarray:
+        return X_scaled - gc_state['mean_fitted']
+
     def split(self, test_size=0.2, random_state=1):
         return train_test_split(self.matrix, self.labels, test_size=test_size, random_state=random_state)
 
@@ -131,8 +146,9 @@ class CFDNAModel:
             X_scaled = X_values.copy()
             scaler_state = None
 
+        gc_state = None
         if self.gc_correction:
-            X_scaled = self._gc_correct(pd.DataFrame(X_scaled, columns=self.features)).to_numpy(dtype=np.float32, copy=True)
+            X_scaled, gc_state = self._fit_gc_correction(X_scaled)
 
         X_scaled = np.nan_to_num(X_scaled, copy=True).astype(np.float32, copy=False)
 
@@ -155,6 +171,7 @@ class CFDNAModel:
             'sample_ids': self.sample_ids,
             'labels': y,
             'scaler': scaler_state,
+            'gc_state': gc_state,
             'pca_model': pca_model,
             'metadata_cols': self.present_metadata_cols,
             'classes_': model.classes_.tolist(),
@@ -167,12 +184,8 @@ class CFDNAModel:
         if scaler is not None:
             X = np.nan_to_num((X - scaler['mean']) / scaler['std'], copy=True).astype(np.float32, copy=False)
 
-        if trained_model.get('gc_correction'):
-            if self.gc_content is None:
-                raise ValueError("gc_content must be provided to CFDNAModel for predict when the trained model uses gc_correction")
-            X_df = pd.DataFrame(X, index=self.sample_ids, columns=self.features)
-            X = self._gc_correct(X_df).to_numpy(dtype=np.float32, copy=True)
-            X = np.nan_to_num(X, copy=True).astype(np.float32, copy=False)
+        if trained_model.get('gc_correction') and trained_model.get('gc_state'):
+            X = self._apply_gc_state(X, trained_model['gc_state'])
 
         if trained_model.get('pca_model') is not None:
             X = trained_model['pca_model'].transform(X)

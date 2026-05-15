@@ -30,6 +30,7 @@ fi
 
 MODEL_PATH=$MODEL_CONFIG_DIR/models/${CONFIG_NAME}_${FEATURE}.pkl
 OUTPUT_PATH=$MODEL_CONFIG_DIR/test/${DATASET_DIR}/${FEATURE}_probs.csv
+GC=data/processing/gc_content_per_region.csv
 
 cd /data/projects/liquid_biopsy/Projects/cfDNA/cfDNA
 mkdir -p logs
@@ -38,4 +39,4 @@ source /data/users/kenderes/miniconda3/etc/profile.d/conda.sh
 conda activate cfdna
 export PYTHONWARNINGS="once:Mean of empty slice:RuntimeWarning,once:Degrees of freedom <= 0 for slice.:RuntimeWarning"
 
-python -u scripts/generalized_modelling/gen_svm_test.py "$TEST_MATRIX" "$MODEL_PATH" "$OUTPUT_PATH"
+python -u scripts/generalized_modelling/gen_svm_test.py "$TEST_MATRIX" "$MODEL_PATH" "$OUTPUT_PATH" "$GC"

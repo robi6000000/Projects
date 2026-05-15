@@ -7,31 +7,21 @@ import numpy as np
 from modules.gen_cfdna_model import CFDNAModel
 
 if __name__ == "__main__":
-    if len(sys.argv) not in (4, 5):
+    if len(sys.argv) != 4:
         print(
             "Usage: python scripts/generalized_modelling/gen_svm_test.py "
-            "[test_matrix_path] [model_path] [output_probs_path] [gc_path?]"
+            "[test_matrix_path] [model_path] [output_probs_path]"
         )
         sys.exit(1)
 
     matrix_path = sys.argv[1]
     model_path = sys.argv[2]
     output_path = sys.argv[3]
-    gc_path = sys.argv[4] if len(sys.argv) == 5 else None
 
-    print(f"Predict config: matrix_path={matrix_path}, model_path={model_path}, output_path={output_path}, gc_path={gc_path}")
+    print(f"Predict config: matrix_path={matrix_path}, model_path={model_path}, output_path={output_path}")
 
     with open(model_path, 'rb') as f:
         trained_model = pickle.load(f)
-
-    gc_content = None
-    if trained_model.get('gc_correction'):
-        if not gc_path:
-            raise ValueError(
-                "Trained model uses gc_correction=True but no gc_path was provided. "
-                "Pass the GC content CSV as the 4th argument."
-            )
-        gc_content = pd.read_csv(gc_path)
 
     print("Loading test matrix")
     mx = pd.read_csv(matrix_path, index_col=0, low_memory=False)
@@ -57,7 +47,7 @@ if __name__ == "__main__":
 
     model = CFDNAModel(
         mx,
-        gc_content=gc_content,
+        gc_content=None,
         feature=trained_model.get('feature'),
         kernel=trained_model.get('kernel'),
         gc_correction=bool(trained_model.get('gc_correction', False)),

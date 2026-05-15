@@ -68,14 +68,16 @@ cfDNA/
 
 Only needed if input data is in paired FASTQ format rather than fragment BED files. Located at `scripts/snakemake_finaledb/`. Aligns reads, marks duplicates, and produces gzip-compressed fragment BED files with columns: chrom, start, end, MAPQ, strand. Skip this step if the data is already in that format.
 
-Implementation of the FinaleDB Snakemake Workflow is out of scope for this thesis, but 
+Implementation details of the FinaleDB Snakemake workflow are out of scope for this thesis; the rest of the pipeline takes its fragment BED outputs as inputs.
 
 ## Step 1 — Build static reference files
 
-`scripts/generalized_processing/static_script.sh` — run once per project, no arguments.
+`scripts/generalized_processing/static_script.sh` — run once per project, no arguments. A thin SLURM wrapper `static_script.sbatch` exists alongside it (same body, `--mem=16G`) for cluster submission.
 
 ```bash
 bash scripts/generalized_processing/static_script.sh
+# or via SLURM:
+sbatch scripts/generalized_processing/static_script.sbatch
 ```
 
 Requires wget, bedtools, liftOver (downloaded automatically), and python with pandas.
@@ -213,19 +215,19 @@ All modelling scripts are in `scripts/generalized_modelling/`. The best-performi
 `gen_svm.sbatch` calls `gen_svm_feature.py`. Runs repeated stratified k-fold CV — 10 folds × 10 repeats = 100 splits — producing out-of-fold predicted probabilities for every sample.
 
 ```bash
-sbatch --array=0-6  --mem=8G  gen_svm.sbatch cv data/matrix linear true true 150 10 30
+sbatch --array=0-6  --mem=16G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 sbatch --array=7-12 --mem=32G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 sbatch --array=13   --mem=64G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 ```
 
 Arguments (positional): option (cv/train), matrix_folder, kernel, gc_correction, pca, pca_components, cv_repeats, mapq_filter, run_tag (optional).
 
-GC correction is only applied to per-region features (pfe, coverage, ends, ocf, ifs, wps). Passing `true` for any other feature is silently ignored.
+GC correction is only applied to per-region features (pfe, coverage, ends, ocf, ifs, wps). Passing `true` for any other feature is auto-disabled by `gen_svm_feature.py:49-51` with a printed warning.
 
-Memory by group:
-- light (indices 0–6): length, edm, iedm, eedm, eoedm, cposedm, fsd — 8G
-- med (indices 7–12): pfe, coverage, ends, ocf, ifs, wps — 32G
-- heavy (index 13): fsr — 64G
+Memory by group (empirical, observed at MAPQ 30, ~459 samples):
+- light (indices 0–6): length, edm, iedm, eedm, eoedm, cposedm, fsd — 16G used in practice for CV; 8G plausibly enough for train/test (unverified)
+- med (indices 7–12): pfe, coverage, ends, ocf, ifs, wps — 32G; CV peaks ~22.5G, a 24G cap causes heavy swapping
+- heavy (index 13): fsr — 64G for CV and training (safe margin); 40G for testing (under monitoring, smaller working set since no fold splits)
 
 Output: `{matrix_folder}/svm_by_feature/{config_name}/cv/{feature}_cv_probs.csv`
 
@@ -234,14 +236,14 @@ Output: `{matrix_folder}/svm_by_feature/{config_name}/cv/{feature}_cv_probs.csv`
 Same script, `train` as first argument. Fits on the entire matrix with no CV splits.
 
 ```bash
-sbatch --array=0-6  --mem=8G  gen_svm.sbatch train data/matrix linear true true 150 10 30
+sbatch --array=0-6  --mem=16G gen_svm.sbatch train data/matrix linear true true 150 10 30
 sbatch --array=7-12 --mem=32G gen_svm.sbatch train data/matrix linear true true 150 10 30
 sbatch --array=13   --mem=64G gen_svm.sbatch train data/matrix linear true true 150 10 30
 ```
 
 Output: `{matrix_folder}/svm_by_feature/{config_name}/models/{config_name}_{feature}.pkl`
 
-The pickle stores the full preprocessing + model pipeline: feature name, kernel, gc_correction flag, pca flag, pca_components, feature_columns list (used to align test matrices), fitted PCA object, fitted GC scaler, and fitted SVC.
+The pickle stores the full preprocessing + model pipeline: feature name, kernel, gc_correction flag, pca flag, pca_components, feature_columns list (used to align test matrices), fitted scaler (mean/std), fitted PCA object, and fitted SVC. No GC state is stored — GC correction is per-sample LOWESS and is re-fit on each new matrix (see Step 9).
 
 ### Step 6 — Build meta-matrix (ensemble prerequisite)
 
@@ -254,7 +256,7 @@ python scripts/generalized_processing/meta_matrix_build.py \
     data/manifest/Cristiano_metadata.csv
 ```
 
-The script globs all `*.csv` files in the probs folder and extracts the feature name as `filename.split("_")[-3]`, which expects standard naming (`{feature}_cv_probs.csv`). Non-standard filenames (e.g. old `svm_linear_..._ifs_cv_probs.csv`) will produce wrong column names — rename them before running. Only samples present in both the CV probs and the metadata are included (inner join).
+The script globs all `*.csv` files in the probs folder and extracts the feature name as `filename.split("_")[0]`, which expects standard naming (`{feature}_cv_probs.csv`, `{feature}_probs.csv`). Anything with a prefix before the feature name (e.g. old `svm_linear_..._ifs_cv_probs.csv`) will produce wrong column names — rename or move them out of the folder first. Only samples present in both the probs files and the metadata are included (inner join).
 
 Output: `{output_folder}/meta_matrix.csv`
 
@@ -299,7 +301,13 @@ sbatch --array=0-6  --mem=8G  gen_svm_test.sbatch \
     prevelynch_test \
     30
 
-sbatch --array=7-12 --mem=32G gen_svm_test.sbatch \
+sbatch --array=7-12 --mem=16G gen_svm_test.sbatch \
+    data/matrix_internal_ly_test \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 \
+    prevelynch_test \
+    30
+
+sbatch --array=13   --mem=40G gen_svm_test.sbatch \
     data/matrix_internal_ly_test \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 \
     prevelynch_test \
@@ -313,7 +321,7 @@ Resolved paths:
 - model pickle: `{model_config_dir}/models/{config_name}_{feature}.pkl`
 - output: `{model_config_dir}/test/{dataset_dir}/{feature}_probs.csv`
 
-The pickle's stored `feature_columns` list aligns the test matrix to the training columns. The fitted PCA and GC correction transforms are replayed on the test data before inference.
+The pickle's stored `feature_columns` list aligns the test matrix to the training columns. The fitted scaler (mean/std) and PCA transform are replayed on the test data; GC correction is re-fit per sample on the test matrix (per-sample LOWESS of coverage vs GC, same as in CV and training — there is no train-side GC state to replay).
 
 ### Step 10 — Ensemble external test
 
@@ -371,7 +379,7 @@ sbatch --array=7-12 --mem=32G scripts/generalized_processing/matrix_build_array.
 sbatch --array=13-13 --mem=64G scripts/generalized_processing/matrix_build_array.sbatch 30 data/cristiano_features data/matrix/by_feature data/manifest/Cristiano_metadata.csv
 
 <!-- perform cross-validation on per-feature models -->
-sbatch --array=0-6  --mem=8G  gen_svm.sbatch cv data/matrix linear true true 150 10 30
+sbatch --array=0-6  --mem=16G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 sbatch --array=7-12 --mem=32G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 sbatch --array=13   --mem=64G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 
@@ -385,7 +393,7 @@ sbatch gen_ensemble_svm.sbatch cv data/matrix/svm_by_feature/svm_linear_pca150.0
 Additionally, to train the ensemble to use for external testing:
 ```
 <!-- train per-feature models on the full cristiano dataset -->
-sbatch --array=0-6  --mem=8G  gen_svm.sbatch train data/matrix linear true true 150 10 30
+sbatch --array=0-6  --mem=16G gen_svm.sbatch train data/matrix linear true true 150 10 30
 sbatch --array=7-12 --mem=32G gen_svm.sbatch train data/matrix linear true true 150 10 30
 sbatch --array=13   --mem=64G gen_svm.sbatch train data/matrix linear true true 150 10 30
 
@@ -397,8 +405,8 @@ And to test the trained ensemble on external prevelynch cohort:
 ```
 <!-- per-feature test predictions -->
 sbatch --array=0-6  --mem=8G  gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
-sbatch --array=7-12 --mem=32G gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
-sbatch --array=13   --mem=64G gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
+sbatch --array=7-12 --mem=16G gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
+sbatch --array=13   --mem=40G gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
 
 <!-- build test meta-matrix from per-feature test probs -->
 python scripts/generalized_processing/meta_matrix_build.py data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/ data/manifest/internal_metadata_ly_filtered_test.csv
