@@ -1,9 +1,11 @@
 import os
 import sys
 import gc
+import time
 import pickle
 import pandas as pd
 import numpy as np
+import pyarrow.csv as pv
 from modules.gen_cfdna_model import CFDNAModel
 
 if __name__ == "__main__":
@@ -19,7 +21,7 @@ if __name__ == "__main__":
     output_path = sys.argv[3]
     gc_path = sys.argv[4] if len(sys.argv) == 5 else None
 
-    print(f"Predict config: matrix_path={matrix_path}, model_path={model_path}, output_path={output_path}, gc_path={gc_path}")
+    print(f"Predict config (v2): matrix_path={matrix_path}, model_path={model_path}, output_path={output_path}, gc_path={gc_path}")
 
     with open(model_path, 'rb') as f:
         trained_model = pickle.load(f)
@@ -33,27 +35,40 @@ if __name__ == "__main__":
             )
         gc_content = pd.read_csv(gc_path)
 
-    print("Loading test matrix")
-    mx = pd.read_csv(matrix_path, index_col=0, low_memory=False)
+    print("Loading test matrix with pyarrow.csv (multi-threaded)")
+    t0 = time.time()
+    table = pv.read_csv(
+        matrix_path,
+        read_options=pv.ReadOptions(use_threads=True, block_size=256 * 1024 * 1024),
+    )
+    print(f"pyarrow.read_csv done in {time.time() - t0:.1f}s, table shape={table.num_rows}x{table.num_columns}")
+
+    t1 = time.time()
+    mx = table.to_pandas(self_destruct=True)
+    del table
+    gc.collect()
+    print(f"to_pandas done in {time.time() - t1:.1f}s")
+
+    mx = mx.set_index(mx.columns[0])
 
     metadata_cols = ['sample_id', 'disease', 'dataset', 'material', 'stage', 'cancer_true']
-    numeric_cols = [c for c in mx.columns if c not in metadata_cols]
-    mx[numeric_cols] = mx[numeric_cols].apply(pd.to_numeric, errors='coerce').astype(np.float32)
-
     model_feature_cols = trained_model.get('feature_columns')
     if model_feature_cols:
+        t2 = time.time()
         model_feature_cols = list(model_feature_cols)
-        missing_features = [c for c in model_feature_cols if c not in mx.columns]
+        col_set = set(mx.columns)
+        missing_features = [c for c in model_feature_cols if c not in col_set]
         if missing_features:
             raise ValueError(
                 f"Test matrix is missing {len(missing_features)} required feature columns. "
                 f"First missing columns: {missing_features[:10]}"
             )
 
-        present_metadata = [c for c in metadata_cols if c in mx.columns]
+        present_metadata = [c for c in metadata_cols if c in col_set]
         mx = mx[present_metadata + model_feature_cols]
+        print(f"column filter done in {time.time() - t2:.1f}s")
 
-    print(f"Test matrix loaded: shape={mx.shape}")
+    print(f"Test matrix ready: shape={mx.shape}")
 
     model = CFDNAModel(
         mx,
@@ -69,7 +84,10 @@ if __name__ == "__main__":
     del mx
     gc.collect()
 
+    print("Running predict (scaler + GC + PCA + SVC)")
+    t3 = time.time()
     output = model.predict(trained_model)
+    print(f"predict done in {time.time() - t3:.1f}s")
 
     output_dir = os.path.dirname(output_path)
     if output_dir:

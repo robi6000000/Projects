@@ -1,9 +1,11 @@
 import os
 import sys
 import gc
+import time
 import pickle
 import pandas as pd
 import numpy as np
+import pyarrow.csv as pv
 from modules.gen_cfdna_model import CFDNAModel
 
 GC_CORRECT_FEATURES = ['pfe', 'coverage', 'ends', 'ocf', 'ifs', 'wps']
@@ -58,11 +60,21 @@ if __name__ == "__main__":
 
     print(f"Config: option={option}, feature={feature}, kernel={kernel}, gc_correction={gc_correction}, pca={pca}, pca_components={pca_components}, cv_repeats={cv_repeats}, mapq_filter={mapq_filter}")
 
-    print(f"Loading matrix for {feature}")
-    mx = pd.read_csv(matrix_path, index_col=0, low_memory=False)
-    metadata_cols = ['sample_id', 'disease', 'dataset', 'material', 'stage', 'cancer_true']
-    numeric_cols = [c for c in mx.columns if c not in metadata_cols]
-    mx[numeric_cols] = mx[numeric_cols].apply(pd.to_numeric, errors='coerce').astype(np.float32)
+    print(f"Loading matrix for {feature} (pyarrow.csv, multi-threaded)")
+    t0 = time.time()
+    table = pv.read_csv(
+        matrix_path,
+        read_options=pv.ReadOptions(use_threads=True, block_size=256 * 1024 * 1024),
+    )
+    print(f"pyarrow.read_csv finished {time.time() - t0:.1f}s, table shape={table.num_rows}x{table.num_columns}")
+
+    t1 = time.time()
+    mx = table.to_pandas(self_destruct=True)
+    del table
+    gc.collect()
+    print(f"to_pandas done in {time.time() - t1:.1f}s")
+
+    mx = mx.set_index(mx.columns[0])
 
     mem_gb = mx.memory_usage(deep=True).sum() / (1024 ** 3)
     print(f"Matrix loaded: shape={mx.shape}, approx_memory={mem_gb:.2f} GB")

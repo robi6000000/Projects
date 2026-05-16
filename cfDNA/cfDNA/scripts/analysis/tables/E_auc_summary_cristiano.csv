@@ -1,4 +1,4 @@
-feature,Cristiano CV,"Cristiano train, LY test","Cristiano train, GS test"
+feature,Cristiano CV,Cristiano models (PreveLynch test),Cristiano models (GenoScan test)
 EDM,0.9675,0.6241,0.3629
 ocEDM,0.9641,0.226,0.2576
 IFS,0.9604,0.8401,0.6981

@@ -1,4 +1,4 @@
-feature,LY CV (10×10)_sens95,LY CV (10×10)_sens85,"LY train, LY test_sens95","LY train, LY test_sens85","LY train, GS test_sens95","LY train, GS test_sens85"
+feature,PreveLynch models (10×10 CV)_sens95,PreveLynch models (10×10 CV)_sens85,"PreveLynch trained models, PreveLynch test_sens95","PreveLynch trained models, PreveLynch test_sens85","PreveLynch trained models, GenoScan test_sens95","PreveLynch trained models, GenoScan test_sens85"
 iEDM,0.8571,0.9524,0.875,0.9167,0.0526,0.2105
 ocEDM,0.8571,0.9405,0.9167,0.9583,0.0,0.1053
 eEDM,0.8571,0.9286,0.9167,0.9583,0.0,0.0

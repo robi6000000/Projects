@@ -41,6 +41,6 @@ mkdir -p logs
 source /data/users/kenderes/miniconda3/etc/profile.d/conda.sh
 conda activate cfdna
 export PYTHONWARNINGS="once:Mean of empty slice:RuntimeWarning,once:Degrees of freedom <= 0 for slice.:RuntimeWarning"
-python -u scripts/generalized_modelling/gen_svm_feature.py $OPTION $MATRIX $MATRIX_FOLDER $GC \
+python -u scripts/generalized_modelling/gen_svm_feature_old.py $OPTION $MATRIX $MATRIX_FOLDER $GC \
                                                              $FEATURE $KERNEL $GC_CORRECTION \
                                                              $PCA $PCA_COMPONENTS $CV_REPEATS $MAPQ_FILTER $RUN_TAG

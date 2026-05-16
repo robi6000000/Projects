@@ -12,12 +12,8 @@
 #   $6 PCA_COMPONENTS
 #   $7 CV_REPEATS
 #   $8 MAPQ_FILTER
-#   $9 RUN_TAG (optional)
+#   $9 RUN_TAG (optional) — also feeds into the auto-derived config name; pass e.g. "v2" to keep outputs separate from v1.
 
-# FEATURES index reference:
-#   light (8G)  -- 0-6:  length edm iedm eedm eoedm cposedm fsd
-#   med   (24G) -- 7-12: pfe coverage ends ocf ifs wps
-#   heavy (64G) -- 13:   fsr
 FEATURES=(length edm iedm eedm eoedm cposedm fsd pfe coverage ends ocf ifs wps fsr)
 FEATURE=${FEATURES[$SLURM_ARRAY_TASK_ID]}
 OPTION=$1

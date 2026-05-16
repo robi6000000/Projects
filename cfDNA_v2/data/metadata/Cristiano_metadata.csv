@@ -1,0 +1,460 @@
+sample_id,disease,dataset,material,frag_path,stage,cancer_true
+EE87786,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87786.hg19.frag.tsv.bgz,II,1
+EE87787,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87787.hg19.frag.tsv.bgz,IV,1
+EE87788,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87788.hg19.frag.tsv.bgz,II,1
+EE87789,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87789.hg19.frag.tsv.bgz,I,1
+EE87790,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87790.hg19.frag.tsv.bgz,II,1
+EE87791,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87791.hg19.frag.tsv.bgz,II,1
+EE87792,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87792.hg19.frag.tsv.bgz,II,1
+EE87793,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87793.hg19.frag.tsv.bgz,II,1
+EE87794,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87794.hg19.frag.tsv.bgz,IV,1
+EE87795,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87795.hg19.frag.tsv.bgz,II,1
+EE87796,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87796.hg19.frag.tsv.bgz,II,1
+EE87797,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87797.hg19.frag.tsv.bgz,II,1
+EE87798,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87798.hg19.frag.tsv.bgz,II,1
+EE87799,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87799.hg19.frag.tsv.bgz,II,1
+EE87800,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87800.hg19.frag.tsv.bgz,I,1
+EE87801,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87801.hg19.frag.tsv.bgz,II,1
+EE87802,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87802.hg19.frag.tsv.bgz,II,1
+EE87803,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87803.hg19.frag.tsv.bgz,IV,1
+EE87804,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87804.hg19.frag.tsv.bgz,II,1
+EE87805,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87805.hg19.frag.tsv.bgz,II,1
+EE87806,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87806.hg19.frag.tsv.bgz,II,1
+EE87807,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87807.hg19.frag.tsv.bgz,I,1
+EE87809,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87809.hg19.frag.tsv.bgz,II,1
+EE87810,Bile duct cancer,cristiano,pl,data/source/cristiano/EE87810.hg19.frag.tsv.bgz,II,1
+EE87811,Breast cancer,cristiano,pl,data/source/cristiano/EE87811.hg19.frag.tsv.bgz,III,1
+EE87812,Breast cancer,cristiano,pl,data/source/cristiano/EE87812.hg19.frag.tsv.bgz,II,1
+EE87813,Breast cancer,cristiano,pl,data/source/cristiano/EE87813.hg19.frag.tsv.bgz,II,1
+EE87814,Breast cancer,cristiano,pl,data/source/cristiano/EE87814.hg19.frag.tsv.bgz,II,1
+EE87815,Breast cancer,cristiano,pl,data/source/cristiano/EE87815.hg19.frag.tsv.bgz,II,1
+EE87816,Breast cancer,cristiano,pl,data/source/cristiano/EE87816.hg19.frag.tsv.bgz,III,1
+EE87817,Breast cancer,cristiano,pl,data/source/cristiano/EE87817.hg19.frag.tsv.bgz,III,1
+EE87818,Breast cancer,cristiano,pl,data/source/cristiano/EE87818.hg19.frag.tsv.bgz,II,1
+EE87819,Breast cancer,cristiano,pl,data/source/cristiano/EE87819.hg19.frag.tsv.bgz,II,1
+EE87820,Breast cancer,cristiano,pl,data/source/cristiano/EE87820.hg19.frag.tsv.bgz,III,1
+EE87821,Breast cancer,cristiano,pl,data/source/cristiano/EE87821.hg19.frag.tsv.bgz,II,1
+EE87822,Breast cancer,cristiano,pl,data/source/cristiano/EE87822.hg19.frag.tsv.bgz,II,1
+EE87823,Breast cancer,cristiano,pl,data/source/cristiano/EE87823.hg19.frag.tsv.bgz,II,1
+EE87824,Breast cancer,cristiano,pl,data/source/cristiano/EE87824.hg19.frag.tsv.bgz,II,1
+EE87825,Breast cancer,cristiano,pl,data/source/cristiano/EE87825.hg19.frag.tsv.bgz,II,1
+EE87826,Breast cancer,cristiano,pl,data/source/cristiano/EE87826.hg19.frag.tsv.bgz,II,1
+EE87827,Breast cancer,cristiano,pl,data/source/cristiano/EE87827.hg19.frag.tsv.bgz,II,1
+EE87828,Breast cancer,cristiano,pl,data/source/cristiano/EE87828.hg19.frag.tsv.bgz,II,1
+EE87829,Breast cancer,cristiano,pl,data/source/cristiano/EE87829.hg19.frag.tsv.bgz,I,1
+EE87830,Breast cancer,cristiano,pl,data/source/cristiano/EE87830.hg19.frag.tsv.bgz,III,1
+EE87831,Breast cancer,cristiano,pl,data/source/cristiano/EE87831.hg19.frag.tsv.bgz,III,1
+EE87832,Breast cancer,cristiano,pl,data/source/cristiano/EE87832.hg19.frag.tsv.bgz,II,1
+EE87833,Breast cancer,cristiano,pl,data/source/cristiano/EE87833.hg19.frag.tsv.bgz,III,1
+EE87834,Breast cancer,cristiano,pl,data/source/cristiano/EE87834.hg19.frag.tsv.bgz,I,1
+EE87835,Breast cancer,cristiano,pl,data/source/cristiano/EE87835.hg19.frag.tsv.bgz,II,1
+EE87836,Breast cancer,cristiano,pl,data/source/cristiano/EE87836.hg19.frag.tsv.bgz,II,1
+EE87837,Breast cancer,cristiano,pl,data/source/cristiano/EE87837.hg19.frag.tsv.bgz,I,1
+EE87838,Breast cancer,cristiano,pl,data/source/cristiano/EE87838.hg19.frag.tsv.bgz,II,1
+EE87839,Breast cancer,cristiano,pl,data/source/cristiano/EE87839.hg19.frag.tsv.bgz,III,1
+EE87840,Breast cancer,cristiano,pl,data/source/cristiano/EE87840.hg19.frag.tsv.bgz,III,1
+EE87841,Breast cancer,cristiano,pl,data/source/cristiano/EE87841.hg19.frag.tsv.bgz,II,1
+EE87842,Breast cancer,cristiano,pl,data/source/cristiano/EE87842.hg19.frag.tsv.bgz,III,1
+EE87843,Breast cancer,cristiano,pl,data/source/cristiano/EE87843.hg19.frag.tsv.bgz,I,1
+EE87844,Breast cancer,cristiano,pl,data/source/cristiano/EE87844.hg19.frag.tsv.bgz,II,1
+EE87845,Breast cancer,cristiano,pl,data/source/cristiano/EE87845.hg19.frag.tsv.bgz,II,1
+EE87846,Breast cancer,cristiano,pl,data/source/cristiano/EE87846.hg19.frag.tsv.bgz,II,1
+EE87847,Breast cancer,cristiano,pl,data/source/cristiano/EE87847.hg19.frag.tsv.bgz,II,1
+EE87848,Breast cancer,cristiano,pl,data/source/cristiano/EE87848.hg19.frag.tsv.bgz,III,1
+EE87849,Breast cancer,cristiano,pl,data/source/cristiano/EE87849.hg19.frag.tsv.bgz,II,1
+EE87850,Breast cancer,cristiano,pl,data/source/cristiano/EE87850.hg19.frag.tsv.bgz,II,1
+EE87851,Breast cancer,cristiano,pl,data/source/cristiano/EE87851.hg19.frag.tsv.bgz,II,1
+EE87852,Breast cancer,cristiano,pl,data/source/cristiano/EE87852.hg19.frag.tsv.bgz,II,1
+EE87853,Breast cancer,cristiano,pl,data/source/cristiano/EE87853.hg19.frag.tsv.bgz,II,1
+EE87854,Breast cancer,cristiano,pl,data/source/cristiano/EE87854.hg19.frag.tsv.bgz,II,1
+EE87855,Breast cancer,cristiano,pl,data/source/cristiano/EE87855.hg19.frag.tsv.bgz,II,1
+EE87857,Breast cancer,cristiano,pl,data/source/cristiano/EE87857.hg19.frag.tsv.bgz,II,1
+EE87858,Breast cancer,cristiano,pl,data/source/cristiano/EE87858.hg19.frag.tsv.bgz,III,1
+EE87859,Breast cancer,cristiano,pl,data/source/cristiano/EE87859.hg19.frag.tsv.bgz,II,1
+EE87860,Breast cancer,cristiano,pl,data/source/cristiano/EE87860.hg19.frag.tsv.bgz,II,1
+EE87861,Breast cancer,cristiano,pl,data/source/cristiano/EE87861.hg19.frag.tsv.bgz,II,1
+EE87862,Breast cancer,cristiano,pl,data/source/cristiano/EE87862.hg19.frag.tsv.bgz,III,1
+EE87863,Breast cancer,cristiano,pl,data/source/cristiano/EE87863.hg19.frag.tsv.bgz,II,1
+EE87864,Breast cancer,cristiano,pl,data/source/cristiano/EE87864.hg19.frag.tsv.bgz,II,1
+EE87865,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87865.hg19.frag.tsv.bgz,IV,1
+EE87866,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87866.hg19.frag.tsv.bgz,IV,1
+EE87867,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87867.hg19.frag.tsv.bgz,IV,1
+EE87868,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87868.hg19.frag.tsv.bgz,II,1
+EE87869,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87869.hg19.frag.tsv.bgz,II,1
+EE87870,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87870.hg19.frag.tsv.bgz,I,1
+EE87871,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87871.hg19.frag.tsv.bgz,I,1
+EE87872,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87872.hg19.frag.tsv.bgz,I,1
+EE87873,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87873.hg19.frag.tsv.bgz,II,1
+EE87874,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87874.hg19.frag.tsv.bgz,II,1
+EE87875,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87875.hg19.frag.tsv.bgz,II,1
+EE87876,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87876.hg19.frag.tsv.bgz,II,1
+EE87877,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87877.hg19.frag.tsv.bgz,II,1
+EE87878,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87878.hg19.frag.tsv.bgz,III,1
+EE87879,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87879.hg19.frag.tsv.bgz,I,1
+EE87880,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87880.hg19.frag.tsv.bgz,III,1
+EE87881,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87881.hg19.frag.tsv.bgz,III,1
+EE87882,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87882.hg19.frag.tsv.bgz,III,1
+EE87883,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87883.hg19.frag.tsv.bgz,I,1
+EE87884,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87884.hg19.frag.tsv.bgz,III,1
+EE87885,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87885.hg19.frag.tsv.bgz,I,1
+EE87886,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87886.hg19.frag.tsv.bgz,I,1
+EE87887,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87887.hg19.frag.tsv.bgz,IV,1
+EE87888,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87888.hg19.frag.tsv.bgz,IV,1
+EE87889,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87889.hg19.frag.tsv.bgz,IV,1
+EE87890,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87890.hg19.frag.tsv.bgz,IV,1
+EE87891,Colorectal cancer,cristiano,pl,data/source/cristiano/EE87891.hg19.frag.tsv.bgz,IV,1
+EE87892,Duodenal cancer,cristiano,pl,data/source/cristiano/EE87892.hg19.frag.tsv.bgz,I,1
+EE87893,Gastric cancer,cristiano,pl,data/source/cristiano/EE87893.hg19.frag.tsv.bgz,II,1
+EE87894,Gastric cancer,cristiano,pl,data/source/cristiano/EE87894.hg19.frag.tsv.bgz,IV,1
+EE87895,Gastric cancer,cristiano,pl,data/source/cristiano/EE87895.hg19.frag.tsv.bgz,III,1
+EE87896,Gastric cancer,cristiano,pl,data/source/cristiano/EE87896.hg19.frag.tsv.bgz,III,1
+EE87897,Gastric cancer,cristiano,pl,data/source/cristiano/EE87897.hg19.frag.tsv.bgz,II,1
+EE87898,Gastric cancer,cristiano,pl,data/source/cristiano/EE87898.hg19.frag.tsv.bgz,III,1
+EE87899,Gastric cancer,cristiano,pl,data/source/cristiano/EE87899.hg19.frag.tsv.bgz,III,1
+EE87900,Gastric cancer,cristiano,pl,data/source/cristiano/EE87900.hg19.frag.tsv.bgz,III,1
+EE87901,Gastric cancer,cristiano,pl,data/source/cristiano/EE87901.hg19.frag.tsv.bgz,II,1
+EE87902,Gastric cancer,cristiano,pl,data/source/cristiano/EE87902.hg19.frag.tsv.bgz,II,1
+EE87903,Gastric cancer,cristiano,pl,data/source/cristiano/EE87903.hg19.frag.tsv.bgz,IV,1
+EE87905,Gastric cancer,cristiano,pl,data/source/cristiano/EE87905.hg19.frag.tsv.bgz,III,1
+EE87906,Gastric cancer,cristiano,pl,data/source/cristiano/EE87906.hg19.frag.tsv.bgz,II,1
+EE87907,Gastric cancer,cristiano,pl,data/source/cristiano/EE87907.hg19.frag.tsv.bgz,I,1
+EE87909,Gastric cancer,cristiano,pl,data/source/cristiano/EE87909.hg19.frag.tsv.bgz,IV,1
+EE87910,Gastric cancer,cristiano,pl,data/source/cristiano/EE87910.hg19.frag.tsv.bgz,IV,1
+EE87911,Gastric cancer,cristiano,pl,data/source/cristiano/EE87911.hg19.frag.tsv.bgz,II,1
+EE87912,Gastric cancer,cristiano,pl,data/source/cristiano/EE87912.hg19.frag.tsv.bgz,I,1
+EE87913,Gastric cancer,cristiano,pl,data/source/cristiano/EE87913.hg19.frag.tsv.bgz,IV,1
+EE87915,Gastric cancer,cristiano,pl,data/source/cristiano/EE87915.hg19.frag.tsv.bgz,III,1
+EE87916,Gastric cancer,cristiano,pl,data/source/cristiano/EE87916.hg19.frag.tsv.bgz,I,1
+EE87917,Gastric cancer,cristiano,pl,data/source/cristiano/EE87917.hg19.frag.tsv.bgz,IV,1
+EE87918,Gastric cancer,cristiano,pl,data/source/cristiano/EE87918.hg19.frag.tsv.bgz,III,1
+EE87919,Gastric cancer,cristiano,pl,data/source/cristiano/EE87919.hg19.frag.tsv.bgz,I,1
+EE87920,Healthy,cristiano,pl,data/source/cristiano/EE87920.hg19.frag.tsv.bgz,,0
+EE87921,Healthy,cristiano,pl,data/source/cristiano/EE87921.hg19.frag.tsv.bgz,,0
+EE87922,Healthy,cristiano,pl,data/source/cristiano/EE87922.hg19.frag.tsv.bgz,,0
+EE87923,Healthy,cristiano,pl,data/source/cristiano/EE87923.hg19.frag.tsv.bgz,,0
+EE87924,Healthy,cristiano,pl,data/source/cristiano/EE87924.hg19.frag.tsv.bgz,,0
+EE87925,Healthy,cristiano,pl,data/source/cristiano/EE87925.hg19.frag.tsv.bgz,,0
+EE87926,Healthy,cristiano,pl,data/source/cristiano/EE87926.hg19.frag.tsv.bgz,,0
+EE87927,Healthy,cristiano,pl,data/source/cristiano/EE87927.hg19.frag.tsv.bgz,,0
+EE87928,Healthy,cristiano,pl,data/source/cristiano/EE87928.hg19.frag.tsv.bgz,,0
+EE87929,Healthy,cristiano,pl,data/source/cristiano/EE87929.hg19.frag.tsv.bgz,,0
+EE87931,Healthy,cristiano,pl,data/source/cristiano/EE87931.hg19.frag.tsv.bgz,,0
+EE87932,Healthy,cristiano,pl,data/source/cristiano/EE87932.hg19.frag.tsv.bgz,,0
+EE87933,Healthy,cristiano,pl,data/source/cristiano/EE87933.hg19.frag.tsv.bgz,,0
+EE87934,Healthy,cristiano,pl,data/source/cristiano/EE87934.hg19.frag.tsv.bgz,,0
+EE87935,Healthy,cristiano,pl,data/source/cristiano/EE87935.hg19.frag.tsv.bgz,,0
+EE87936,Healthy,cristiano,pl,data/source/cristiano/EE87936.hg19.frag.tsv.bgz,,0
+EE87937,Healthy,cristiano,pl,data/source/cristiano/EE87937.hg19.frag.tsv.bgz,,0
+EE87938,Healthy,cristiano,pl,data/source/cristiano/EE87938.hg19.frag.tsv.bgz,,0
+EE87939,Healthy,cristiano,pl,data/source/cristiano/EE87939.hg19.frag.tsv.bgz,,0
+EE87940,Healthy,cristiano,pl,data/source/cristiano/EE87940.hg19.frag.tsv.bgz,,0
+EE87941,Healthy,cristiano,pl,data/source/cristiano/EE87941.hg19.frag.tsv.bgz,,0
+EE87942,Healthy,cristiano,pl,data/source/cristiano/EE87942.hg19.frag.tsv.bgz,,0
+EE87943,Healthy,cristiano,pl,data/source/cristiano/EE87943.hg19.frag.tsv.bgz,,0
+EE87944,Healthy,cristiano,pl,data/source/cristiano/EE87944.hg19.frag.tsv.bgz,,0
+EE87945,Healthy,cristiano,pl,data/source/cristiano/EE87945.hg19.frag.tsv.bgz,,0
+EE87946,Healthy,cristiano,pl,data/source/cristiano/EE87946.hg19.frag.tsv.bgz,,0
+EE87948,Healthy,cristiano,pl,data/source/cristiano/EE87948.hg19.frag.tsv.bgz,,0
+EE87949,Healthy,cristiano,pl,data/source/cristiano/EE87949.hg19.frag.tsv.bgz,,0
+EE87950,Healthy,cristiano,pl,data/source/cristiano/EE87950.hg19.frag.tsv.bgz,,0
+EE87951,Healthy,cristiano,pl,data/source/cristiano/EE87951.hg19.frag.tsv.bgz,,0
+EE87952,Healthy,cristiano,pl,data/source/cristiano/EE87952.hg19.frag.tsv.bgz,,0
+EE87953,Healthy,cristiano,pl,data/source/cristiano/EE87953.hg19.frag.tsv.bgz,,0
+EE87954,Healthy,cristiano,pl,data/source/cristiano/EE87954.hg19.frag.tsv.bgz,,0
+EE87955,Healthy,cristiano,pl,data/source/cristiano/EE87955.hg19.frag.tsv.bgz,,0
+EE87956,Healthy,cristiano,pl,data/source/cristiano/EE87956.hg19.frag.tsv.bgz,,0
+EE87957,Healthy,cristiano,pl,data/source/cristiano/EE87957.hg19.frag.tsv.bgz,,0
+EE87958,Healthy,cristiano,pl,data/source/cristiano/EE87958.hg19.frag.tsv.bgz,,0
+EE87960,Healthy,cristiano,pl,data/source/cristiano/EE87960.hg19.frag.tsv.bgz,,0
+EE87961,Healthy,cristiano,pl,data/source/cristiano/EE87961.hg19.frag.tsv.bgz,,0
+EE87962,Healthy,cristiano,pl,data/source/cristiano/EE87962.hg19.frag.tsv.bgz,,0
+EE87964,Healthy,cristiano,pl,data/source/cristiano/EE87964.hg19.frag.tsv.bgz,,0
+EE87965,Healthy,cristiano,pl,data/source/cristiano/EE87965.hg19.frag.tsv.bgz,,0
+EE87966,Healthy,cristiano,pl,data/source/cristiano/EE87966.hg19.frag.tsv.bgz,,0
+EE87967,Healthy,cristiano,pl,data/source/cristiano/EE87967.hg19.frag.tsv.bgz,,0
+EE87968,Healthy,cristiano,pl,data/source/cristiano/EE87968.hg19.frag.tsv.bgz,,0
+EE87969,Healthy,cristiano,pl,data/source/cristiano/EE87969.hg19.frag.tsv.bgz,,0
+EE87970,Healthy,cristiano,pl,data/source/cristiano/EE87970.hg19.frag.tsv.bgz,,0
+EE87971,Healthy,cristiano,pl,data/source/cristiano/EE87971.hg19.frag.tsv.bgz,,0
+EE87972,Healthy,cristiano,pl,data/source/cristiano/EE87972.hg19.frag.tsv.bgz,,0
+EE87973,Healthy,cristiano,pl,data/source/cristiano/EE87973.hg19.frag.tsv.bgz,,0
+EE87974,Healthy,cristiano,pl,data/source/cristiano/EE87974.hg19.frag.tsv.bgz,,0
+EE87975,Healthy,cristiano,pl,data/source/cristiano/EE87975.hg19.frag.tsv.bgz,,0
+EE87976,Healthy,cristiano,pl,data/source/cristiano/EE87976.hg19.frag.tsv.bgz,,0
+EE87977,Healthy,cristiano,pl,data/source/cristiano/EE87977.hg19.frag.tsv.bgz,,0
+EE87978,Healthy,cristiano,pl,data/source/cristiano/EE87978.hg19.frag.tsv.bgz,,0
+EE87979,Healthy,cristiano,pl,data/source/cristiano/EE87979.hg19.frag.tsv.bgz,,0
+EE87980,Healthy,cristiano,pl,data/source/cristiano/EE87980.hg19.frag.tsv.bgz,,0
+EE87981,Healthy,cristiano,pl,data/source/cristiano/EE87981.hg19.frag.tsv.bgz,,0
+EE87982,Healthy,cristiano,pl,data/source/cristiano/EE87982.hg19.frag.tsv.bgz,,0
+EE87983,Healthy,cristiano,pl,data/source/cristiano/EE87983.hg19.frag.tsv.bgz,,0
+EE87984,Healthy,cristiano,pl,data/source/cristiano/EE87984.hg19.frag.tsv.bgz,,0
+EE87985,Healthy,cristiano,pl,data/source/cristiano/EE87985.hg19.frag.tsv.bgz,,0
+EE87986,Healthy,cristiano,pl,data/source/cristiano/EE87986.hg19.frag.tsv.bgz,,0
+EE87987,Healthy,cristiano,pl,data/source/cristiano/EE87987.hg19.frag.tsv.bgz,,0
+EE87988,Healthy,cristiano,pl,data/source/cristiano/EE87988.hg19.frag.tsv.bgz,,0
+EE87989,Healthy,cristiano,pl,data/source/cristiano/EE87989.hg19.frag.tsv.bgz,,0
+EE87990,Healthy,cristiano,pl,data/source/cristiano/EE87990.hg19.frag.tsv.bgz,,0
+EE87991,Healthy,cristiano,pl,data/source/cristiano/EE87991.hg19.frag.tsv.bgz,,0
+EE87992,Healthy,cristiano,pl,data/source/cristiano/EE87992.hg19.frag.tsv.bgz,,0
+EE87993,Healthy,cristiano,pl,data/source/cristiano/EE87993.hg19.frag.tsv.bgz,,0
+EE87994,Healthy,cristiano,pl,data/source/cristiano/EE87994.hg19.frag.tsv.bgz,,0
+EE87995,Healthy,cristiano,pl,data/source/cristiano/EE87995.hg19.frag.tsv.bgz,,0
+EE87996,Healthy,cristiano,pl,data/source/cristiano/EE87996.hg19.frag.tsv.bgz,,0
+EE87997,Healthy,cristiano,pl,data/source/cristiano/EE87997.hg19.frag.tsv.bgz,,0
+EE87999,Healthy,cristiano,pl,data/source/cristiano/EE87999.hg19.frag.tsv.bgz,,0
+EE88000,Healthy,cristiano,pl,data/source/cristiano/EE88000.hg19.frag.tsv.bgz,,0
+EE88001,Healthy,cristiano,pl,data/source/cristiano/EE88001.hg19.frag.tsv.bgz,,0
+EE88002,Healthy,cristiano,pl,data/source/cristiano/EE88002.hg19.frag.tsv.bgz,,0
+EE88003,Healthy,cristiano,pl,data/source/cristiano/EE88003.hg19.frag.tsv.bgz,,0
+EE88004,Healthy,cristiano,pl,data/source/cristiano/EE88004.hg19.frag.tsv.bgz,,0
+EE88005,Healthy,cristiano,pl,data/source/cristiano/EE88005.hg19.frag.tsv.bgz,,0
+EE88006,Healthy,cristiano,pl,data/source/cristiano/EE88006.hg19.frag.tsv.bgz,,0
+EE88007,Healthy,cristiano,pl,data/source/cristiano/EE88007.hg19.frag.tsv.bgz,,0
+EE88008,Healthy,cristiano,pl,data/source/cristiano/EE88008.hg19.frag.tsv.bgz,,0
+EE88010,Healthy,cristiano,pl,data/source/cristiano/EE88010.hg19.frag.tsv.bgz,,0
+EE88011,Healthy,cristiano,pl,data/source/cristiano/EE88011.hg19.frag.tsv.bgz,,0
+EE88012,Healthy,cristiano,pl,data/source/cristiano/EE88012.hg19.frag.tsv.bgz,,0
+EE88013,Healthy,cristiano,pl,data/source/cristiano/EE88013.hg19.frag.tsv.bgz,,0
+EE88014,Healthy,cristiano,pl,data/source/cristiano/EE88014.hg19.frag.tsv.bgz,,0
+EE88016,Healthy,cristiano,pl,data/source/cristiano/EE88016.hg19.frag.tsv.bgz,,0
+EE88017,Healthy,cristiano,pl,data/source/cristiano/EE88017.hg19.frag.tsv.bgz,,0
+EE88018,Healthy,cristiano,pl,data/source/cristiano/EE88018.hg19.frag.tsv.bgz,,0
+EE88019,Healthy,cristiano,pl,data/source/cristiano/EE88019.hg19.frag.tsv.bgz,,0
+EE88021,Healthy,cristiano,pl,data/source/cristiano/EE88021.hg19.frag.tsv.bgz,,0
+EE88022,Healthy,cristiano,pl,data/source/cristiano/EE88022.hg19.frag.tsv.bgz,,0
+EE88023,Healthy,cristiano,pl,data/source/cristiano/EE88023.hg19.frag.tsv.bgz,,0
+EE88024,Healthy,cristiano,pl,data/source/cristiano/EE88024.hg19.frag.tsv.bgz,,0
+EE88026,Healthy,cristiano,pl,data/source/cristiano/EE88026.hg19.frag.tsv.bgz,,0
+EE88028,Healthy,cristiano,pl,data/source/cristiano/EE88028.hg19.frag.tsv.bgz,,0
+EE88029,Healthy,cristiano,pl,data/source/cristiano/EE88029.hg19.frag.tsv.bgz,,0
+EE88030,Healthy,cristiano,pl,data/source/cristiano/EE88030.hg19.frag.tsv.bgz,,0
+EE88031,Healthy,cristiano,pl,data/source/cristiano/EE88031.hg19.frag.tsv.bgz,,0
+EE88032,Healthy,cristiano,pl,data/source/cristiano/EE88032.hg19.frag.tsv.bgz,,0
+EE88033,Healthy,cristiano,pl,data/source/cristiano/EE88033.hg19.frag.tsv.bgz,,0
+EE88034,Healthy,cristiano,pl,data/source/cristiano/EE88034.hg19.frag.tsv.bgz,,0
+EE88035,Healthy,cristiano,pl,data/source/cristiano/EE88035.hg19.frag.tsv.bgz,,0
+EE88036,Healthy,cristiano,pl,data/source/cristiano/EE88036.hg19.frag.tsv.bgz,,0
+EE88037,Healthy,cristiano,pl,data/source/cristiano/EE88037.hg19.frag.tsv.bgz,,0
+EE88038,Healthy,cristiano,pl,data/source/cristiano/EE88038.hg19.frag.tsv.bgz,,0
+EE88039,Healthy,cristiano,pl,data/source/cristiano/EE88039.hg19.frag.tsv.bgz,,0
+EE88040,Healthy,cristiano,pl,data/source/cristiano/EE88040.hg19.frag.tsv.bgz,,0
+EE88041,Healthy,cristiano,pl,data/source/cristiano/EE88041.hg19.frag.tsv.bgz,,0
+EE88042,Healthy,cristiano,pl,data/source/cristiano/EE88042.hg19.frag.tsv.bgz,,0
+EE88043,Healthy,cristiano,pl,data/source/cristiano/EE88043.hg19.frag.tsv.bgz,,0
+EE88044,Healthy,cristiano,pl,data/source/cristiano/EE88044.hg19.frag.tsv.bgz,,0
+EE88045,Healthy,cristiano,pl,data/source/cristiano/EE88045.hg19.frag.tsv.bgz,,0
+EE88046,Healthy,cristiano,pl,data/source/cristiano/EE88046.hg19.frag.tsv.bgz,,0
+EE88047,Healthy,cristiano,pl,data/source/cristiano/EE88047.hg19.frag.tsv.bgz,,0
+EE88048,Healthy,cristiano,pl,data/source/cristiano/EE88048.hg19.frag.tsv.bgz,,0
+EE88049,Healthy,cristiano,pl,data/source/cristiano/EE88049.hg19.frag.tsv.bgz,,0
+EE88050,Healthy,cristiano,pl,data/source/cristiano/EE88050.hg19.frag.tsv.bgz,,0
+EE88051,Healthy,cristiano,pl,data/source/cristiano/EE88051.hg19.frag.tsv.bgz,,0
+EE88052,Healthy,cristiano,pl,data/source/cristiano/EE88052.hg19.frag.tsv.bgz,,0
+EE88053,Healthy,cristiano,pl,data/source/cristiano/EE88053.hg19.frag.tsv.bgz,,0
+EE88054,Healthy,cristiano,pl,data/source/cristiano/EE88054.hg19.frag.tsv.bgz,,0
+EE88055,Healthy,cristiano,pl,data/source/cristiano/EE88055.hg19.frag.tsv.bgz,,0
+EE88056,Healthy,cristiano,pl,data/source/cristiano/EE88056.hg19.frag.tsv.bgz,,0
+EE88057,Healthy,cristiano,pl,data/source/cristiano/EE88057.hg19.frag.tsv.bgz,,0
+EE88058,Healthy,cristiano,pl,data/source/cristiano/EE88058.hg19.frag.tsv.bgz,,0
+EE88059,Healthy,cristiano,pl,data/source/cristiano/EE88059.hg19.frag.tsv.bgz,,0
+EE88060,Healthy,cristiano,pl,data/source/cristiano/EE88060.hg19.frag.tsv.bgz,,0
+EE88061,Healthy,cristiano,pl,data/source/cristiano/EE88061.hg19.frag.tsv.bgz,,0
+EE88062,Healthy,cristiano,pl,data/source/cristiano/EE88062.hg19.frag.tsv.bgz,,0
+EE88063,Healthy,cristiano,pl,data/source/cristiano/EE88063.hg19.frag.tsv.bgz,,0
+EE88064,Healthy,cristiano,pl,data/source/cristiano/EE88064.hg19.frag.tsv.bgz,,0
+EE88065,Healthy,cristiano,pl,data/source/cristiano/EE88065.hg19.frag.tsv.bgz,,0
+EE88066,Healthy,cristiano,pl,data/source/cristiano/EE88066.hg19.frag.tsv.bgz,,0
+EE88067,Healthy,cristiano,pl,data/source/cristiano/EE88067.hg19.frag.tsv.bgz,,0
+EE88068,Healthy,cristiano,pl,data/source/cristiano/EE88068.hg19.frag.tsv.bgz,,0
+EE88069,Healthy,cristiano,pl,data/source/cristiano/EE88069.hg19.frag.tsv.bgz,,0
+EE88070,Healthy,cristiano,pl,data/source/cristiano/EE88070.hg19.frag.tsv.bgz,,0
+EE88071,Healthy,cristiano,pl,data/source/cristiano/EE88071.hg19.frag.tsv.bgz,,0
+EE88072,Healthy,cristiano,pl,data/source/cristiano/EE88072.hg19.frag.tsv.bgz,,0
+EE88073,Healthy,cristiano,pl,data/source/cristiano/EE88073.hg19.frag.tsv.bgz,,0
+EE88074,Healthy,cristiano,pl,data/source/cristiano/EE88074.hg19.frag.tsv.bgz,,0
+EE88075,Healthy,cristiano,pl,data/source/cristiano/EE88075.hg19.frag.tsv.bgz,,0
+EE88076,Healthy,cristiano,pl,data/source/cristiano/EE88076.hg19.frag.tsv.bgz,,0
+EE88077,Healthy,cristiano,pl,data/source/cristiano/EE88077.hg19.frag.tsv.bgz,,0
+EE88078,Healthy,cristiano,pl,data/source/cristiano/EE88078.hg19.frag.tsv.bgz,,0
+EE88079,Healthy,cristiano,pl,data/source/cristiano/EE88079.hg19.frag.tsv.bgz,,0
+EE88080,Healthy,cristiano,pl,data/source/cristiano/EE88080.hg19.frag.tsv.bgz,,0
+EE88081,Healthy,cristiano,pl,data/source/cristiano/EE88081.hg19.frag.tsv.bgz,,0
+EE88083,Healthy,cristiano,pl,data/source/cristiano/EE88083.hg19.frag.tsv.bgz,,0
+EE88084,Healthy,cristiano,pl,data/source/cristiano/EE88084.hg19.frag.tsv.bgz,,0
+EE88085,Healthy,cristiano,pl,data/source/cristiano/EE88085.hg19.frag.tsv.bgz,,0
+EE88086,Healthy,cristiano,pl,data/source/cristiano/EE88086.hg19.frag.tsv.bgz,,0
+EE88087,Healthy,cristiano,pl,data/source/cristiano/EE88087.hg19.frag.tsv.bgz,,0
+EE88088,Healthy,cristiano,pl,data/source/cristiano/EE88088.hg19.frag.tsv.bgz,,0
+EE88089,Healthy,cristiano,pl,data/source/cristiano/EE88089.hg19.frag.tsv.bgz,,0
+EE88090,Healthy,cristiano,pl,data/source/cristiano/EE88090.hg19.frag.tsv.bgz,,0
+EE88091,Healthy,cristiano,pl,data/source/cristiano/EE88091.hg19.frag.tsv.bgz,,0
+EE88092,Healthy,cristiano,pl,data/source/cristiano/EE88092.hg19.frag.tsv.bgz,,0
+EE88094,Healthy,cristiano,pl,data/source/cristiano/EE88094.hg19.frag.tsv.bgz,,0
+EE88095,Healthy,cristiano,pl,data/source/cristiano/EE88095.hg19.frag.tsv.bgz,,0
+EE88096,Healthy,cristiano,pl,data/source/cristiano/EE88096.hg19.frag.tsv.bgz,,0
+EE88097,Healthy,cristiano,pl,data/source/cristiano/EE88097.hg19.frag.tsv.bgz,,0
+EE88098,Healthy,cristiano,pl,data/source/cristiano/EE88098.hg19.frag.tsv.bgz,,0
+EE88099,Healthy,cristiano,pl,data/source/cristiano/EE88099.hg19.frag.tsv.bgz,,0
+EE88100,Healthy,cristiano,pl,data/source/cristiano/EE88100.hg19.frag.tsv.bgz,,0
+EE88101,Healthy,cristiano,pl,data/source/cristiano/EE88101.hg19.frag.tsv.bgz,,0
+EE88102,Healthy,cristiano,pl,data/source/cristiano/EE88102.hg19.frag.tsv.bgz,,0
+EE88103,Healthy,cristiano,pl,data/source/cristiano/EE88103.hg19.frag.tsv.bgz,,0
+EE88104,Healthy,cristiano,pl,data/source/cristiano/EE88104.hg19.frag.tsv.bgz,,0
+EE88105,Healthy,cristiano,pl,data/source/cristiano/EE88105.hg19.frag.tsv.bgz,,0
+EE88106,Healthy,cristiano,pl,data/source/cristiano/EE88106.hg19.frag.tsv.bgz,,0
+EE88107,Healthy,cristiano,pl,data/source/cristiano/EE88107.hg19.frag.tsv.bgz,,0
+EE88108,Healthy,cristiano,pl,data/source/cristiano/EE88108.hg19.frag.tsv.bgz,,0
+EE88109,Healthy,cristiano,pl,data/source/cristiano/EE88109.hg19.frag.tsv.bgz,,0
+EE88110,Healthy,cristiano,pl,data/source/cristiano/EE88110.hg19.frag.tsv.bgz,,0
+EE88111,Healthy,cristiano,pl,data/source/cristiano/EE88111.hg19.frag.tsv.bgz,,0
+EE88112,Healthy,cristiano,pl,data/source/cristiano/EE88112.hg19.frag.tsv.bgz,,0
+EE88113,Healthy,cristiano,pl,data/source/cristiano/EE88113.hg19.frag.tsv.bgz,,0
+EE88114,Healthy,cristiano,pl,data/source/cristiano/EE88114.hg19.frag.tsv.bgz,,0
+EE88115,Healthy,cristiano,pl,data/source/cristiano/EE88115.hg19.frag.tsv.bgz,,0
+EE88116,Healthy,cristiano,pl,data/source/cristiano/EE88116.hg19.frag.tsv.bgz,,0
+EE88117,Healthy,cristiano,pl,data/source/cristiano/EE88117.hg19.frag.tsv.bgz,,0
+EE88118,Healthy,cristiano,pl,data/source/cristiano/EE88118.hg19.frag.tsv.bgz,,0
+EE88119,Healthy,cristiano,pl,data/source/cristiano/EE88119.hg19.frag.tsv.bgz,,0
+EE88120,Healthy,cristiano,pl,data/source/cristiano/EE88120.hg19.frag.tsv.bgz,,0
+EE88121,Healthy,cristiano,pl,data/source/cristiano/EE88121.hg19.frag.tsv.bgz,,0
+EE88122,Healthy,cristiano,pl,data/source/cristiano/EE88122.hg19.frag.tsv.bgz,,0
+EE88123,Healthy,cristiano,pl,data/source/cristiano/EE88123.hg19.frag.tsv.bgz,,0
+EE88124,Healthy,cristiano,pl,data/source/cristiano/EE88124.hg19.frag.tsv.bgz,,0
+EE88125,Healthy,cristiano,pl,data/source/cristiano/EE88125.hg19.frag.tsv.bgz,,0
+EE88126,Healthy,cristiano,pl,data/source/cristiano/EE88126.hg19.frag.tsv.bgz,,0
+EE88128,Healthy,cristiano,pl,data/source/cristiano/EE88128.hg19.frag.tsv.bgz,,0
+EE88129,Healthy,cristiano,pl,data/source/cristiano/EE88129.hg19.frag.tsv.bgz,,0
+EE88130,Healthy,cristiano,pl,data/source/cristiano/EE88130.hg19.frag.tsv.bgz,,0
+EE88131,Healthy,cristiano,pl,data/source/cristiano/EE88131.hg19.frag.tsv.bgz,,0
+EE88132,Healthy,cristiano,pl,data/source/cristiano/EE88132.hg19.frag.tsv.bgz,,0
+EE88133,Healthy,cristiano,pl,data/source/cristiano/EE88133.hg19.frag.tsv.bgz,,0
+EE88134,Healthy,cristiano,pl,data/source/cristiano/EE88134.hg19.frag.tsv.bgz,,0
+EE88135,Healthy,cristiano,pl,data/source/cristiano/EE88135.hg19.frag.tsv.bgz,,0
+EE88137,Healthy,cristiano,pl,data/source/cristiano/EE88137.hg19.frag.tsv.bgz,,0
+EE88138,Healthy,cristiano,pl,data/source/cristiano/EE88138.hg19.frag.tsv.bgz,,0
+EE88139,Healthy,cristiano,pl,data/source/cristiano/EE88139.hg19.frag.tsv.bgz,,0
+EE88140,Healthy,cristiano,pl,data/source/cristiano/EE88140.hg19.frag.tsv.bgz,,0
+EE88142,Healthy,cristiano,pl,data/source/cristiano/EE88142.hg19.frag.tsv.bgz,,0
+EE88143,Healthy,cristiano,pl,data/source/cristiano/EE88143.hg19.frag.tsv.bgz,,0
+EE88144,Healthy,cristiano,pl,data/source/cristiano/EE88144.hg19.frag.tsv.bgz,,0
+EE88145,Healthy,cristiano,pl,data/source/cristiano/EE88145.hg19.frag.tsv.bgz,,0
+EE88146,Healthy,cristiano,pl,data/source/cristiano/EE88146.hg19.frag.tsv.bgz,,0
+EE88147,Healthy,cristiano,pl,data/source/cristiano/EE88147.hg19.frag.tsv.bgz,,0
+EE88148,Healthy,cristiano,pl,data/source/cristiano/EE88148.hg19.frag.tsv.bgz,,0
+EE88149,Healthy,cristiano,pl,data/source/cristiano/EE88149.hg19.frag.tsv.bgz,,0
+EE88150,Healthy,cristiano,pl,data/source/cristiano/EE88150.hg19.frag.tsv.bgz,,0
+EE88151,Healthy,cristiano,pl,data/source/cristiano/EE88151.hg19.frag.tsv.bgz,,0
+EE88153,Healthy,cristiano,pl,data/source/cristiano/EE88153.hg19.frag.tsv.bgz,,0
+EE88154,Healthy,cristiano,pl,data/source/cristiano/EE88154.hg19.frag.tsv.bgz,,0
+EE88155,Healthy,cristiano,pl,data/source/cristiano/EE88155.hg19.frag.tsv.bgz,,0
+EE88156,Healthy,cristiano,pl,data/source/cristiano/EE88156.hg19.frag.tsv.bgz,,0
+EE88157,Healthy,cristiano,pl,data/source/cristiano/EE88157.hg19.frag.tsv.bgz,,0
+EE88158,Healthy,cristiano,pl,data/source/cristiano/EE88158.hg19.frag.tsv.bgz,,0
+EE88159,Healthy,cristiano,pl,data/source/cristiano/EE88159.hg19.frag.tsv.bgz,,0
+EE88160,Healthy,cristiano,pl,data/source/cristiano/EE88160.hg19.frag.tsv.bgz,,0
+EE88161,Healthy,cristiano,pl,data/source/cristiano/EE88161.hg19.frag.tsv.bgz,,0
+EE88162,Healthy,cristiano,pl,data/source/cristiano/EE88162.hg19.frag.tsv.bgz,,0
+EE88164,Healthy,cristiano,pl,data/source/cristiano/EE88164.hg19.frag.tsv.bgz,,0
+EE88165,Healthy,cristiano,pl,data/source/cristiano/EE88165.hg19.frag.tsv.bgz,,0
+EE88166,Healthy,cristiano,pl,data/source/cristiano/EE88166.hg19.frag.tsv.bgz,,0
+EE88167,Healthy,cristiano,pl,data/source/cristiano/EE88167.hg19.frag.tsv.bgz,,0
+EE88168,Healthy,cristiano,pl,data/source/cristiano/EE88168.hg19.frag.tsv.bgz,,0
+EE88169,Healthy,cristiano,pl,data/source/cristiano/EE88169.hg19.frag.tsv.bgz,,0
+EE88170,Healthy,cristiano,pl,data/source/cristiano/EE88170.hg19.frag.tsv.bgz,,0
+EE88171,Healthy,cristiano,pl,data/source/cristiano/EE88171.hg19.frag.tsv.bgz,,0
+EE88172,Healthy,cristiano,pl,data/source/cristiano/EE88172.hg19.frag.tsv.bgz,,0
+EE88173,Healthy,cristiano,pl,data/source/cristiano/EE88173.hg19.frag.tsv.bgz,,0
+EE88174,Healthy,cristiano,pl,data/source/cristiano/EE88174.hg19.frag.tsv.bgz,,0
+EE88175,Healthy,cristiano,pl,data/source/cristiano/EE88175.hg19.frag.tsv.bgz,,0
+EE88176,Healthy,cristiano,pl,data/source/cristiano/EE88176.hg19.frag.tsv.bgz,,0
+EE88177,Healthy,cristiano,pl,data/source/cristiano/EE88177.hg19.frag.tsv.bgz,,0
+EE88178,Healthy,cristiano,pl,data/source/cristiano/EE88178.hg19.frag.tsv.bgz,,0
+EE88179,Healthy,cristiano,pl,data/source/cristiano/EE88179.hg19.frag.tsv.bgz,,0
+EE88180,Healthy,cristiano,pl,data/source/cristiano/EE88180.hg19.frag.tsv.bgz,,0
+EE88181,Healthy,cristiano,pl,data/source/cristiano/EE88181.hg19.frag.tsv.bgz,,0
+EE88182,Healthy,cristiano,pl,data/source/cristiano/EE88182.hg19.frag.tsv.bgz,,0
+EE88193,Lung cancer,cristiano,pl,data/source/cristiano/EE88193.hg19.frag.tsv.bgz,II,1
+EE88194,Lung cancer,cristiano,pl,data/source/cristiano/EE88194.hg19.frag.tsv.bgz,III,1
+EE88195,Lung cancer,cristiano,pl,data/source/cristiano/EE88195.hg19.frag.tsv.bgz,II,1
+EE88196,Lung cancer,cristiano,pl,data/source/cristiano/EE88196.hg19.frag.tsv.bgz,II,1
+EE88197,Lung cancer,cristiano,pl,data/source/cristiano/EE88197.hg19.frag.tsv.bgz,II,1
+EE88198,Lung cancer,cristiano,pl,data/source/cristiano/EE88198.hg19.frag.tsv.bgz,II,1
+EE88199,Lung cancer,cristiano,pl,data/source/cristiano/EE88199.hg19.frag.tsv.bgz,I,1
+EE88200,Lung cancer,cristiano,pl,data/source/cristiano/EE88200.hg19.frag.tsv.bgz,I,1
+EE88201,Lung cancer,cristiano,pl,data/source/cristiano/EE88201.hg19.frag.tsv.bgz,I,1
+EE88202,Lung cancer,cristiano,pl,data/source/cristiano/EE88202.hg19.frag.tsv.bgz,I,1
+EE88203,Lung cancer,cristiano,pl,data/source/cristiano/EE88203.hg19.frag.tsv.bgz,II,1
+EE88204,Lung cancer,cristiano,pl,data/source/cristiano/EE88204.hg19.frag.tsv.bgz,I,1
+EE88205,Lung cancer,cristiano,pl,data/source/cristiano/EE88205.hg19.frag.tsv.bgz,I,1
+EE88206,Lung cancer,cristiano,pl,data/source/cristiano/EE88206.hg19.frag.tsv.bgz,I,1
+EE88207,Lung cancer,cristiano,pl,data/source/cristiano/EE88207.hg19.frag.tsv.bgz,II,1
+EE88208,Lung cancer,cristiano,pl,data/source/cristiano/EE88208.hg19.frag.tsv.bgz,II,1
+EE88209,Lung cancer,cristiano,pl,data/source/cristiano/EE88209.hg19.frag.tsv.bgz,III,1
+EE88210,Lung cancer,cristiano,pl,data/source/cristiano/EE88210.hg19.frag.tsv.bgz,II,1
+EE88211,Lung cancer,cristiano,pl,data/source/cristiano/EE88211.hg19.frag.tsv.bgz,II,1
+EE88212,Lung cancer,cristiano,pl,data/source/cristiano/EE88212.hg19.frag.tsv.bgz,II,1
+EE88262,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88262.hg19.frag.tsv.bgz,IV,1
+EE88263,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88263.hg19.frag.tsv.bgz,I,1
+EE88264,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88264.hg19.frag.tsv.bgz,IV,1
+EE88265,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88265.hg19.frag.tsv.bgz,III,1
+EE88266,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88266.hg19.frag.tsv.bgz,III,1
+EE88267,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88267.hg19.frag.tsv.bgz,II,1
+EE88268,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88268.hg19.frag.tsv.bgz,II,1
+EE88269,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88269.hg19.frag.tsv.bgz,IV,1
+EE88270,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88270.hg19.frag.tsv.bgz,III,1
+EE88271,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88271.hg19.frag.tsv.bgz,I,1
+EE88272,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88272.hg19.frag.tsv.bgz,I,1
+EE88273,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88273.hg19.frag.tsv.bgz,I,1
+EE88274,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88274.hg19.frag.tsv.bgz,I,1
+EE88275,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88275.hg19.frag.tsv.bgz,I,1
+EE88276,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88276.hg19.frag.tsv.bgz,III,1
+EE88277,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88277.hg19.frag.tsv.bgz,I,1
+EE88278,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88278.hg19.frag.tsv.bgz,I,1
+EE88279,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88279.hg19.frag.tsv.bgz,I,1
+EE88280,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88280.hg19.frag.tsv.bgz,IV,1
+EE88281,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88281.hg19.frag.tsv.bgz,IV,1
+EE88282,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88282.hg19.frag.tsv.bgz,I,1
+EE88283,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88283.hg19.frag.tsv.bgz,I,1
+EE88284,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88284.hg19.frag.tsv.bgz,I,1
+EE88285,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88285.hg19.frag.tsv.bgz,I,1
+EE88286,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88286.hg19.frag.tsv.bgz,I,1
+EE88287,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88287.hg19.frag.tsv.bgz,I,1
+EE88288,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88288.hg19.frag.tsv.bgz,III,1
+EE88289,Ovarian cancer,cristiano,pl,data/source/cristiano/EE88289.hg19.frag.tsv.bgz,III,1
+EE88290,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88290.hg19.frag.tsv.bgz,II,1
+EE88291,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88291.hg19.frag.tsv.bgz,II,1
+EE88292,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88292.hg19.frag.tsv.bgz,II,1
+EE88293,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88293.hg19.frag.tsv.bgz,II,1
+EE88294,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88294.hg19.frag.tsv.bgz,II,1
+EE88295,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88295.hg19.frag.tsv.bgz,II,1
+EE88296,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88296.hg19.frag.tsv.bgz,II,1
+EE88297,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88297.hg19.frag.tsv.bgz,II,1
+EE88298,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88298.hg19.frag.tsv.bgz,II,1
+EE88299,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88299.hg19.frag.tsv.bgz,II,1
+EE88300,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88300.hg19.frag.tsv.bgz,II,1
+EE88301,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88301.hg19.frag.tsv.bgz,II,1
+EE88302,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88302.hg19.frag.tsv.bgz,II,1
+EE88303,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88303.hg19.frag.tsv.bgz,II,1
+EE88304,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88304.hg19.frag.tsv.bgz,II,1
+EE88305,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88305.hg19.frag.tsv.bgz,II,1
+EE88306,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88306.hg19.frag.tsv.bgz,II,1
+EE88307,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88307.hg19.frag.tsv.bgz,II,1
+EE88308,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88308.hg19.frag.tsv.bgz,I,1
+EE88309,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88309.hg19.frag.tsv.bgz,II,1
+EE88310,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88310.hg19.frag.tsv.bgz,I,1
+EE88311,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88311.hg19.frag.tsv.bgz,II,1
+EE88312,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88312.hg19.frag.tsv.bgz,II,1
+EE88313,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88313.hg19.frag.tsv.bgz,III,1
+EE88314,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88314.hg19.frag.tsv.bgz,I,1
+EE88315,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88315.hg19.frag.tsv.bgz,II,1
+EE88316,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88316.hg19.frag.tsv.bgz,II,1
+EE88317,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88317.hg19.frag.tsv.bgz,II,1
+EE88318,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88318.hg19.frag.tsv.bgz,II,1
+EE88319,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88319.hg19.frag.tsv.bgz,II,1
+EE88320,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88320.hg19.frag.tsv.bgz,II,1
+EE88321,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88321.hg19.frag.tsv.bgz,II,1
+EE88322,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88322.hg19.frag.tsv.bgz,II,1
+EE88323,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88323.hg19.frag.tsv.bgz,II,1
+EE88324,Pancreatic cancer,cristiano,pl,data/source/cristiano/EE88324.hg19.frag.tsv.bgz,II,1
+EE88325,Bile duct cancer,cristiano,pl,data/source/cristiano/EE88325.hg19.frag.tsv.bgz,II,1

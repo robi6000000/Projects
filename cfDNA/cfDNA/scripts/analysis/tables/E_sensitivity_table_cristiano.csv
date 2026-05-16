@@ -1,4 +1,4 @@
-feature,Cristiano CV_sens95,Cristiano CV_sens85,"Cristiano train, LY test_sens95","Cristiano train, LY test_sens85","Cristiano train, GS test_sens95","Cristiano train, GS test_sens85"
+feature,Cristiano CV_sens95,Cristiano CV_sens85,Cristiano models (PreveLynch test)_sens95,Cristiano models (PreveLynch test)_sens85,Cristiano models (GenoScan test)_sens95,Cristiano models (GenoScan test)_sens85
 EDM,0.9155,0.9577,0.0,0.0,0.0,0.0
 ocEDM,0.8216,0.9437,0.0,0.0,0.0,0.1053
 IFS,0.8404,0.9202,0.5417,0.6667,0.0,0.4737

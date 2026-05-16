@@ -1,4 +1,4 @@
-feature,LY CV (10×10),"LY train, LY test","LY train, GS test"
+feature,PreveLynch models (10×10 CV),"PreveLynch trained models, PreveLynch test","PreveLynch trained models, GenoScan test"
 iEDM,0.9672,0.9642,0.3601
 ocEDM,0.9649,0.9869,0.2576
 eEDM,0.9619,0.9841,0.5
