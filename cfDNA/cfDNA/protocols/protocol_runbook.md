@@ -101,11 +101,11 @@ sbatch --array=13   --mem=40G scripts/generalized_modelling/gen_svm_test.sbatch 
 # 10. ensemble external test (build test meta-matrix from per-feature test probs, then run ensemble inference)
 python scripts/generalized_processing/meta_matrix_build.py \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/ \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_mx_ly.csv \
     data/manifest/internal_metadata_ly_filtered_test.csv
 
 sbatch scripts/generalized_modelling/gen_ensemble_svm.sbatch test \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_mx_ly.csv \
     linear 10 prevelynch_test \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/models/ensemble.pkl \
     none nostd false

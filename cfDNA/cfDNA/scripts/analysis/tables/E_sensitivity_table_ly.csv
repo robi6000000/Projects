@@ -1,4 +1,4 @@
-feature,LY CV_sens95,LY CV_sens85,"LY train, LY test_sens95","LY train, LY test_sens85","LY train, GS test_sens95","LY train, GS test_sens85"
+feature,LY CV (10×10)_sens95,LY CV (10×10)_sens85,"LY train, LY test_sens95","LY train, LY test_sens85","LY train, GS test_sens95","LY train, GS test_sens85"
 iEDM,0.8571,0.9524,0.875,0.9167,0.0526,0.2105
 ocEDM,0.8571,0.9405,0.9167,0.9583,0.0,0.1053
 eEDM,0.8571,0.9286,0.9167,0.9583,0.0,0.0
@@ -7,7 +7,7 @@ IFS,0.8571,0.9286,0.625,0.75,0.0,0.4737
 eoEDM,0.8214,0.8929,0.9167,0.9583,0.0,0.0
 FSD,0.8452,0.8929,0.875,0.875,0.0,0.0
 Length,0.7619,0.9048,0.7917,0.875,0.1053,0.1579
-FSR,0.5238,0.7143,,,,
+FSR,0.5238,0.7143,0.7917,0.8333,0.0,0.4737
 WPS,,,0.9583,0.9583,0.0,0.3158
 Ends,,,0.8333,0.9167,0.0,0.4737
 PFE,,,0.8333,0.8333,0.1053,0.3684
