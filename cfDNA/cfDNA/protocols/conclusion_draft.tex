@@ -1,0 +1,88 @@
+% Conclusion chapter draft -- approx. 1.5 pages
+% Placeholders in \emph{[brackets]} mark spots to fill with concrete numbers from the results tables/figures.
+
+\section{Summary of contributions}
+
+This thesis investigated the use of cell-free DNA (cfDNA) fragmentation patterns
+for non-invasive cancer detection, with an emphasis on enlarging the feature
+repertoire described by Zhou \emph{et al.} and on validating the resulting
+classifier across multiple independent cohorts. A generalised
+modelling pipeline was built around fourteen per-region or whole-genome
+fragmentation features (length, FSD, FSR, PFE, coverage, ends, OCF, IFS, WPS,
+EDM, iEDM, eEDM, eoEDM and ocEDM). Four of these features --- iEDM, eEDM,
+eoEDM and ocEDM --- are introduced for the first time as extensions of the
+end-motif diversity (EDM) family. Each feature is modelled independently
+with a linear support-vector machine following per-fold standardisation,
+sample-wise LOWESS GC correction (for the per-region features) and PCA dimensionality
+reduction; the per-feature out-of-fold probabilities are then combined by a
+second-layer SVM into an ensemble score.
+
+\section{Per-feature and ensemble performance}
+
+On the Cristiano \emph{et al.} cohort, the canonical
+\texttt{svm\_linear\_pca150\_gc\_mapq30} configuration delivered AUCs of
+\emph{[Zhou-comparable range]} for the nine features overlapping with the
+Zhou panel, broadly reproducing the published baseline and confirming that
+the modelling choices generalise across implementations. The four novel
+features achieved AUCs of \emph{[insert range]}, with eoEDM and ocEDM in
+particular reaching values competitive with the strongest per-region
+features. The 14-feature ensemble exceeded every individual feature on the
+Cristiano cross-validation, indicating that fragmentation signals captured by
+distinct features are partially complementary rather than wholly redundant.
+
+A stage-stratified analysis showed the expected monotone trend of
+discriminability with disease stage, with the largest AUC gap between
+healthy controls and stage~IV cancers and a substantially smaller separation
+at stage~I. Cancer-type-stratified results highlighted that the per-feature
+ranking is not invariant: features that lead overall do not necessarily
+dominate every histology, motivating ensemble combination over single-feature
+classifiers.
+
+\section{External generalisation}
+
+Generalisability was assessed by applying the Cristiano-trained models to two
+internal cohorts (PreveLynch and GenoScan) and, conversely, by training
+PreveLynch-based classifiers and evaluating them on the held-out PreveLynch
+test split and on GenoScan. On the PreveLynch test split the
+Cristiano-trained ensemble retained \emph{[insert AUC]} of its cross-validation
+performance, demonstrating transferability across sequencing platforms and
+sample preparations. Performance on GenoScan was \emph{[higher/lower than
+PreveLynch]}, although the small cohort size (\(n=\emph{[insert N]}\))
+limits the statistical resolution of that comparison. Sensitivity at
+clinically relevant specificities (95\% and 85\%) followed the same
+pattern as the AUCs and is reported per feature and per cohort in the
+sensitivity tables.
+
+\section{Limitations}
+
+Several limitations of the present study should be highlighted. First, the
+training cohorts are single-centre and modest in size relative to the
+diversity of human cancers; the PreveLynch cohort in particular contains
+primarily colorectal cancers and healthy controls, restricting the
+cancer-type generality of LY-trained classifiers. Second, the GenoScan
+external set is small, so reported AUCs there are noisier than for
+PreveLynch. Third, fragmentation features were computed on a fixed open-chromatin
+region set (\(\sim\)560k regions liftover'ed to GRCh37); changing the
+reference region pool, the MAPQ filter, or the LOWESS bandwidth would
+likely shift absolute scores, although ranking among features should be
+robust. Fourth, all models were trained with default SVM hyperparameters
+beyond kernel choice and PCA components; a more thorough hyperparameter
+search was not performed because exploratory runs (see hyperparameter
+section) indicated diminishing returns relative to the cost.
+
+\section{Future directions}
+
+The results suggest several productive avenues for subsequent work. The most
+direct extension is validation on additional, ideally multi-centre, cohorts
+covering a broader spectrum of cancer types and clinical stages, which would
+both stress-test the present ensemble and enable cancer-type-specific
+threshold calibration. A second direction is the integration of orthogonal
+cfDNA modalities --- methylation patterns, somatic mutation signals, or
+copy-number information --- into the existing fragmentation-feature
+ensemble, building on evidence that fragmentation alone leaves a non-trivial
+fraction of early-stage cancers undetected. Finally, deploying the
+classifier in a clinical context will require calibration of the operating
+threshold against the desired specificity (e.g.\ 95\% or 99\%), incorporation
+of pre-analytical batch effects into the training procedure, and
+prospective evaluation in a screening setting rather than the
+case-control design used here.

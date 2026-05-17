@@ -252,13 +252,13 @@ The pickle stores the full preprocessing + model pipeline: feature name, kernel,
 ```bash
 python scripts/generalized_processing/meta_matrix_build.py \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/cv/ \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/ \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/meta_matrix.csv \
     data/manifest/Cristiano_metadata.csv
 ```
 
 The script globs all `*.csv` files in the probs folder and extracts the feature name as `filename.split("_")[0]`, which expects standard naming (`{feature}_cv_probs.csv`, `{feature}_probs.csv`). Anything with a prefix before the feature name (e.g. old `svm_linear_..._ifs_cv_probs.csv`) will produce wrong column names — rename or move them out of the folder first. Only samples present in both the probs files and the metadata are included (inner join).
 
-Output: `{output_folder}/meta_matrix.csv`
+The second argument is the **full output file path** (including filename), not a directory. Passing a directory path raises `IsADirectoryError`.
 
 ### Step 7 — Ensemble cross-validation
 
@@ -331,9 +331,11 @@ Two sub-steps: first build a test meta-matrix from the per-feature test predicti
 ```bash
 python scripts/generalized_processing/meta_matrix_build.py \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/ \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv \
     data/manifest/internal_metadata_ly_filtered_test.csv
 ```
+
+The second argument must be the full output file path including filename, not a directory.
 
 #### b. Run ensemble inference:
 ```bash
@@ -343,10 +345,13 @@ sbatch gen_ensemble_svm.sbatch \
     linear 10 \
     prevelynch_test \
     .../ensemble_nostd/models/ensemble.pkl \
-    none nostd false
+    .../ensemble_nostd/test/prevelynch_test_preds.csv \
+    nostd false
 ```
 
 Output: `{config_dir}/ensemble_{run_tag}/test/{dataset_tag}_preds.csv`. Needs only 4G.
+
+Note: always pass `$7` (test_output_path) explicitly. The default derivation uses `dirname(dirname(meta_matrix_path))` which was designed for the CV/train case where the meta_matrix lives at `<config>/meta_matrix/meta_matrix.csv`; for the test case the meta_matrix is nested deeper and the default produces a wrong path.
 
 ### Summary
 
@@ -357,7 +362,7 @@ Step 6:  meta_matrix_build.py (cv probs)                 -  meta_matrix/meta_mat
 Step 7:  gen_ensemble_svm.sbatch cv                      -  ensemble_{tag}/cv/cv_probs.csv
 Step 8:  gen_ensemble_svm.sbatch train                   -  ensemble_{tag}/models/ensemble.pkl
 Step 9:  gen_svm_test.sbatch  (array 0-13, per target)   -  test/{dataset}/{feature}_probs.csv
-Step 10a: meta_matrix_build.py (test probs)              -  ensemble_{tag}/test/{dataset}_meta/
+Step 10a: meta_matrix_build.py (test probs)              -  ensemble_{tag}/test/{dataset}_meta/meta_matrix.csv
 Step 10b: gen_ensemble_svm.sbatch test                   -  ensemble_{tag}/test/{dataset}_preds.csv
 ```
 
@@ -384,7 +389,7 @@ sbatch --array=7-12 --mem=32G gen_svm.sbatch cv data/matrix linear true true 150
 sbatch --array=13   --mem=64G gen_svm.sbatch cv data/matrix linear true true 150 10 30
 
 <!-- build meta-matrix -->
-python scripts/generalized_processing/meta_matrix_build.py data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/cv/ data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/ data/manifest/Cristiano_metadata.csv
+python scripts/generalized_processing/meta_matrix_build.py data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/cv/ data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/meta_matrix.csv data/manifest/Cristiano_metadata.csv
 
 <!-- perform cross-validation on the ensemble model -->
 sbatch gen_ensemble_svm.sbatch cv data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/meta_matrix.csv linear 10 none none none nostd false
@@ -409,8 +414,8 @@ sbatch --array=7-12 --mem=16G gen_svm_test.sbatch data/matrix_internal_ly_test d
 sbatch --array=13   --mem=40G gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
 
 <!-- build test meta-matrix from per-feature test probs -->
-python scripts/generalized_processing/meta_matrix_build.py data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/ data/manifest/internal_metadata_ly_filtered_test.csv
+python scripts/generalized_processing/meta_matrix_build.py data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv data/manifest/internal_metadata_ly_filtered_test.csv
 
-<!-- ensemble test predictions -->
-sbatch gen_ensemble_svm.sbatch test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv linear 10 prevelynch_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/models/ensemble.pkl none nostd false
+<!-- ensemble test predictions (pass $7 output path explicitly — default derivation is wrong for test case) -->
+sbatch gen_ensemble_svm.sbatch test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv linear 10 prevelynch_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/models/ensemble.pkl data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_preds.csv nostd false
 ```

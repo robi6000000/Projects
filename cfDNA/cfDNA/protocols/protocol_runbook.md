@@ -86,7 +86,7 @@ sbatch --array=13   --mem=64G scripts/generalized_modelling/gen_svm.sbatch train
 # 7. build CV meta-matrix
 python scripts/generalized_processing/meta_matrix_build.py \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/cv/ \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/ \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/meta_matrix/meta_matrix.csv \
     data/manifest/Cristiano_metadata.csv
 
 # 8. ensemble CV + train
@@ -99,16 +99,20 @@ sbatch --array=7-12 --mem=16G scripts/generalized_modelling/gen_svm_test.sbatch 
 sbatch --array=13   --mem=40G scripts/generalized_modelling/gen_svm_test.sbatch data/matrix_internal_ly_test data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30 prevelynch_test 30
 
 # 10. ensemble external test (build test meta-matrix from per-feature test probs, then run ensemble inference)
+# meta_matrix_build.py: second arg must be the full output file path (including .csv filename), not a directory
 python scripts/generalized_processing/meta_matrix_build.py \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/test/prevelynch_test/ \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_mx_ly.csv \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv \
     data/manifest/internal_metadata_ly_filtered_test.csv
 
+# gen_ensemble_svm.sbatch test: always pass $7 (test_output_path) explicitly — default derivation is wrong when
+# meta_matrix lives in ensemble_nostd/test/<dataset>_meta/ rather than the top-level meta_matrix/ folder
 sbatch scripts/generalized_modelling/gen_ensemble_svm.sbatch test \
-    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_mx_ly.csv \
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_meta/meta_matrix.csv \
     linear 10 prevelynch_test \
     data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/models/ensemble.pkl \
-    none nostd false
+    data/matrix/svm_by_feature/svm_linear_pca150.0_gc_mapq30/ensemble_nostd/test/prevelynch_test_preds.csv \
+    nostd false
 ```
 
 ## 5. Best config (used throughout thesis)
